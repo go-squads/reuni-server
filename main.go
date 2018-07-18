@@ -7,12 +7,6 @@ import (
 	"github.com/go-squads/reuni-server/appcontext"
 )
 
-
-func multiply(x,y int) int {
-	return x*y
-}
-
-
 func main() {
 	appcontext.InitContext()
 	router := server.CreateRouter()
