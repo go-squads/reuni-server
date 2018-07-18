@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
 	"log"
 	"os"
 	"fmt"
 	"database/sql"
+	"github.com/go-squads/reuni-server/server"
     _ "github.com/lib/pq"
 )
 
@@ -39,8 +39,6 @@ func main() {
 	}
 
 	fmt.Println("Connection established")
-
-	router := mux.NewRouter()
-	router.HandleFunc("/", HomeHandler)
+	router := server.CreateRouter()
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
