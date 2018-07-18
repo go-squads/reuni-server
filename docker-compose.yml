@@ -28,3 +28,18 @@ services:
       DB_NAME: reunidev
     links:
       - db
+  pg-admin:
+    image: dpage/pgadmin4
+    environment:
+      POSTGRES_DB: reunidev
+      POSTGRES_USER: postgresdev
+      POSTGRES_PASSWORD: reunidev123
+      PGADMIN_DEFAULT_EMAIL: reunidev@go-squad.com
+      PGADMIN_DEFAULT_PASSWORD: reunideveloper
+    links:
+      - db
+    depends_on:
+      - db
+    ports:
+      - 8001:80
+    
