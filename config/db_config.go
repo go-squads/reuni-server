@@ -1,6 +1,7 @@
 package config
 import (
 	"os"
+	"fmt"
 )
 type databaseConfig struct {
 	host        string
@@ -9,6 +10,10 @@ type databaseConfig struct {
 	password    string
 	name        string
 }
+
+const (
+	SSL_MODE = "disable"
+)
 
 func getDatabaseConfig() *databaseConfig {
 	return &databaseConfig{
@@ -20,3 +25,7 @@ func getDatabaseConfig() *databaseConfig {
 	}	
 }
 
+func GetConnectionString() string {
+	dbConfig := getDatabaseConfig()
+	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=%s", dbConfig.username, dbConfig.password, dbConfig.name, dbConfig.host, dbConfig.port,SSL_MODE)
+}
