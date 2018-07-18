@@ -20,5 +20,9 @@ services:
       - .:/go/src/github.com/go-squads/reuni-server
     depends_on:
       - db
+    environment:
+      POSTGRES_DB: reunidev
+      POSTGRES_USER: postgresdev
+      POSTGRES_PASSWORD: reunidev123
     links:
       - db
