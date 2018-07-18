@@ -12,5 +12,5 @@ ADD . /go/src/github.com/go-squads/reuni-server
 WORKDIR /go/src/github.com/go-squads/reuni-server
 
 # serve the app
-CMD dep ensure && go test . && go run main.go
+CMD dep ensure && go test -v ./... && go run main.go
 EXPOSE 8080
