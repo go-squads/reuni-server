@@ -21,8 +21,10 @@ services:
     depends_on:
       - db
     environment:
-      POSTGRES_DB: reunidev
-      POSTGRES_USER: postgresdev
-      POSTGRES_PASSWORD: reunidev123
+      DB_HOST: db
+      DB_USER: postgresdev
+      DB_PASS: reunidev123
+      DB_PORT: 5432
+      DB_NAME: reunidev
     links:
       - db
