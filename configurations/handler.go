@@ -27,7 +27,7 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 		log.Println("CreateNamespace: error writing to database", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("success"))
+	w.Write([]byte("201 Created"))
 }

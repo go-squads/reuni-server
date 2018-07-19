@@ -7,6 +7,7 @@ import (
 )
 
 const createNewNamespaceQuery = "INSERT INTO configurations(service_id, namespace,config_store) VALUES ($1,$2,$3)"
+const retrieveAllNamespaceQuery = "SELECT (namespace,MAX(version)) namespace FROM configurations WHERE service_id = $1 GROUP BY namespace"
 
 func createNewNamespace(configStore configurationStore) error {
 	db := context.GetDB()
@@ -16,4 +17,13 @@ func createNewNamespace(configStore configurationStore) error {
 	}
 	_, err = db.Query(createNewNamespaceQuery, configStore.ServiceId, configStore.Namespace, configjson)
 	return err
+}
+
+func retrieveAllNamespace(service_id string) ([]configurationStore, error) {
+	db := context.GetDB()
+	rows, err := db.Query(retrieveAllNamespaceQuery, service_id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() 
 }

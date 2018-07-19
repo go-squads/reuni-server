@@ -36,9 +36,9 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("CreateServiceHandler: error writing to database", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("success"))
+	w.Write([]byte("201 Created"))
 }
 
 func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +58,7 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("success"))
+	w.Write([]byte("200 OK"))
 }
 
 func createServiceProcess(servicedata servicev) error {
