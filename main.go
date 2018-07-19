@@ -1,10 +1,11 @@
 package main
 
 import (
-	"net/http"
 	"log"
-	"github.com/go-squads/reuni-server/server"
+	"net/http"
+
 	"github.com/go-squads/reuni-server/appcontext"
+	"github.com/go-squads/reuni-server/server"
 )
 
 func main() {
