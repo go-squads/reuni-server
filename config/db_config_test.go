@@ -1,9 +1,10 @@
 package config
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDatabaseConfig(t *testing.T) {
@@ -13,8 +14,8 @@ func TestDatabaseConfig(t *testing.T) {
 		"DB_USER": "reuni_test",
 		"DB_PASS": "reuni_test123!",
 		"DB_NAME": "reuni_test",
-	 }
-	
+	}
+
 	for k, v := range configVars {
 		os.Setenv(k, v)
 		defer os.Unsetenv(k)
@@ -35,8 +36,8 @@ func TestDBConnectionString(t *testing.T) {
 		"DB_USER": "reuni_test",
 		"DB_PASS": "reuni_test123!",
 		"DB_NAME": "reuni_test",
-	 }
-	
+	}
+
 	for k, v := range configVars {
 		os.Setenv(k, v)
 		defer os.Unsetenv(k)

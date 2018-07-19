@@ -36,6 +36,8 @@ services:
       POSTGRES_PASSWORD: reunidev123
       PGADMIN_DEFAULT_EMAIL: reunidev@go-squad.com
       PGADMIN_DEFAULT_PASSWORD: reunideveloper
+    volumes:
+      - ./tmp/pgadmin:/var/lib/pgadmin
     links:
       - db
     depends_on:

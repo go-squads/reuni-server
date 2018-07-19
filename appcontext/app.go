@@ -1,17 +1,20 @@
 package appcontext
+
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
-	"github.com/go-squads/reuni-server/config"
 	"log"
+
+	"github.com/go-squads/reuni-server/config"
+	_ "github.com/lib/pq"
 )
+
 type appContext struct {
-	db          *sql.DB
+	db *sql.DB
 }
 
 var context *appContext
 
-func initDB() (*sql.DB,error) {
+func initDB() (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", config.GetConnectionString())
 
@@ -19,25 +22,22 @@ func initDB() (*sql.DB,error) {
 		panic(err)
 	}
 
-	defer db.Close()
-
 	err = db.Ping()
 
 	if err != nil {
 		panic(err)
 	}
-	return db,nil
+	return db, nil
 }
 
 func InitContext() {
-	db,_ := initDB()
+	db, _ := initDB()
 	log.Print("Connection Established")
 	context = &appContext{
-		db : db,
+		db: db,
 	}
 }
 
-func GetDB() *sql.DB{
+func GetDB() *sql.DB {
 	return context.db
 }
-
