@@ -7,8 +7,12 @@ import (
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
-
-	servicesjson, err := json.Marshal(getAll())
+	services, err := getAll()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	servicesjson, err := json.Marshal(services)
 	if err != nil {
 		return
 	}
