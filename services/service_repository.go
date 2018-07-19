@@ -11,19 +11,19 @@ const createServiceQuery = "INSERT INTO services(name) VALUES ($1)"
 const deleteServiceQuery = "DELETE FROM services WHERE name = $1"
 const findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
 
-func getAll() []service {
+func getAll() ([]service, error) {
 	var services []service
 
 	db := context.GetDB()
 	rows, err := db.Query(getAllServicesQuery)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var service service
-		err := rows.Scan(&service.Id, &service.Name, &service.CreatedAt)
+		err = rows.Scan(&service.Id, &service.Name, &service.CreatedAt)
 
 		if err != nil {
 			log.Fatal(err)
@@ -31,7 +31,7 @@ func getAll() []service {
 		services = append(services, service)
 	}
 	log.Printf("%v", services)
-	return services
+	return services, nil
 }
 
 func createService(servicestore service) error {
