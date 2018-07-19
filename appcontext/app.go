@@ -9,6 +9,8 @@ type appContext struct {
 	db          *sql.DB
 }
 
+var context *appContext
+
 func initDB() (*sql.DB,error) {
 
 	db, err := sql.Open("postgres", config.GetConnectionString())
@@ -27,11 +29,15 @@ func initDB() (*sql.DB,error) {
 	return db,nil
 }
 
-func InitContext() *appContext{
+func InitContext() {
 	db,_ := initDB()
 	log.Print("Connection Established")
-	return &appContext{
+	context = &appContext{
 		db : db,
 	}
+}
+
+func GetDB() *sql.DB{
+	return context.db
 }
 
