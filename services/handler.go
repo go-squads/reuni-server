@@ -37,8 +37,34 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("success"))
 }
 
+func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
+	var servicedata servicev
+	err := json.NewDecoder(r.Body).Decode(&servicedata)
+	defer r.Body.Close()
+
+	if err != nil {
+		log.Println("DeleteerviceHandler: error parsing body")
+		return
+	}
+
+	err = deleteServiceProcess(servicedata)
+	if err != nil {
+		log.Println("DeleteServiceHandler: error writing to database", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte("success"))
+}
+
 func createServiceProcess(servicedata servicev) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
 	return createService(serviceStore)
+}
+
+func deleteServiceProcess(servicedata servicev) error {
+	serviceStore := service{}
+	serviceStore.Name = servicedata.Name
+	return deleteService(serviceStore)
 }

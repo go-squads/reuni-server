@@ -9,5 +9,6 @@ func CreateRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/services", services.GetAllServicesHandler).Methods("GET")
 	router.HandleFunc("/services", services.CreateServiceHandler).Methods("POST")
+	router.HandleFunc("/services", services.DeleteServiceHandler).Methods("DELETE")
 	return router
 }
