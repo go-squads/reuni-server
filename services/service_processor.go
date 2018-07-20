@@ -8,6 +8,7 @@ import (
 func createServiceProcess(servicedata servicev) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
+	serviceStore.AuthorizationToken = generateToken()
 	return createService(serviceStore)
 }
 

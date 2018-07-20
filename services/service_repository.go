@@ -7,7 +7,7 @@ import (
 )
 
 const getAllServicesQuery = "SELECT id,name,created_at FROM services"
-const createServiceQuery = "INSERT INTO services(name) VALUES ($1)"
+const createServiceQuery = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
 const deleteServiceQuery = "DELETE FROM services WHERE name = $1"
 const findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
 
@@ -36,7 +36,7 @@ func getAll() ([]service, error) {
 
 func createService(servicestore service) error {
 	db := context.GetDB()
-	_, err := db.Query(createServiceQuery, servicestore.Name)
+	_, err := db.Query(createServiceQuery, servicestore.Name, servicestore.AuthorizationToken)
 	return err
 }
 
