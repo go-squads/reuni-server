@@ -26,3 +26,15 @@ func generateToken() string {
 	}
 	return base64.StdEncoding.EncodeToString(randomBytes)[:64]
 }
+
+func validateTokenProcess(serviceName string, inputToken string) (bool, error) {
+	token, err := getServiceToken(serviceName)
+	if err != nil {
+		return false, err
+	}
+	if token == inputToken {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}

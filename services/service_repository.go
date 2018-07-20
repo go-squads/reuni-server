@@ -6,10 +6,13 @@ import (
 	context "github.com/go-squads/reuni-server/appcontext"
 )
 
-const getAllServicesQuery = "SELECT id,name,created_at FROM services"
-const createServiceQuery = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
-const deleteServiceQuery = "DELETE FROM services WHERE name = $1"
-const findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
+const (
+	getAllServicesQuery       = "SELECT id,name,created_at FROM services"
+	createServiceQuery        = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
+	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
+	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
+	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
+)
 
 func getAll() ([]service, error) {
 	var services []service
@@ -52,4 +55,14 @@ func FindOneServiceByName(name string) (service, error) {
 	row := db.QueryRow(findOneServiceByNameQuery, name)
 	err := row.Scan(&service.Id, &service.Name, &service.CreatedAt)
 	return service, err
+}
+
+func getServiceToken(name string) (string, error) {
+	var token string
+	row := context.GetDB().QueryRow(getServiceTokenQuery, name)
+	err := row.Scan(&token)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
