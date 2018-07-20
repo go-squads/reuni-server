@@ -17,4 +17,4 @@ build: dep | test
 run:
 	@$(BIN)/$(APP_NAME)
 install:
-	@go install .
+	@go install . -o

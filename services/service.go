@@ -11,3 +11,7 @@ type service struct {
 type servicev struct {
 	Name string `json:"name"`
 }
+
+type serviceToken struct {
+	Token string `json:"token"`
+}
