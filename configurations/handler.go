@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-squads/reuni-server/response"
 	"github.com/gorilla/mux"
 )
 
@@ -27,7 +28,5 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 		log.Println("CreateNamespace: error writing to database", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("201 Created"))
+	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
 }

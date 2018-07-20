@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/go-squads/reuni-server/response"
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,9 +18,7 @@ func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(servicesjson)
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(servicesjson))
 }
 
 func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,9 +36,7 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("CreateServiceHandler: error writing to database", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("201 Created"))
+	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
 }
 
 func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,19 +54,5 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("DeleteServiceHandler: error writing to database", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("200 OK"))
-}
-
-func createServiceProcess(servicedata servicev) error {
-	serviceStore := service{}
-	serviceStore.Name = servicedata.Name
-	return createService(serviceStore)
-}
-
-func deleteServiceProcess(servicedata servicev) error {
-	serviceStore := service{}
-	serviceStore.Name = servicedata.Name
-	return deleteService(serviceStore)
+	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
 }

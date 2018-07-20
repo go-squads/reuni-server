@@ -18,12 +18,3 @@ func createNewNamespace(configStore configurationStore) error {
 	_, err = db.Query(createNewNamespaceQuery, configStore.ServiceId, configStore.Namespace, configjson)
 	return err
 }
-
-func retrieveAllNamespace(service_id string) ([]configurationStore, error) {
-	db := context.GetDB()
-	rows, err := db.Query(retrieveAllNamespaceQuery, service_id)
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() 
-}
