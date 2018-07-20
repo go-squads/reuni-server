@@ -11,6 +11,8 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/services", services.GetAllServicesHandler).Methods("GET")
 	router.HandleFunc("/services", services.CreateServiceHandler).Methods("POST")
 	router.HandleFunc("/services", services.DeleteServiceHandler).Methods("DELETE")
-	router.HandleFunc("/services/{service_name}/configurations", configurations.CreateNamespace).Methods("POST")
+	router.HandleFunc("/services/{service_name}/namespaces", configurations.RetrieveAllNamespaceHandler).Methods("GET")
+	router.HandleFunc("/services/{service_name}/namespaces", configurations.CreateNamespace).Methods("POST")
+
 	return router
 }

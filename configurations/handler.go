@@ -30,3 +30,15 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
 }
+
+func RetrieveAllNamespaceHandler(w http.ResponseWriter, r *http.Request) {
+	var service_name = mux.Vars(r)["service_name"]
+	log.Printf("RetrieveAllNamespaces: Get Request to %v for retrieve all data", service_name)
+	configsjson, err := retrieveAllNamespaceProcess(service_name)
+	if err != nil {
+		log.Println("RetrieveAllNamespaces: ", err.Error())
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(configsjson))
+
+}
