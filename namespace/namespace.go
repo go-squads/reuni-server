@@ -1,14 +1,13 @@
 package namespace
 
-type configurationStore struct {
-	Id             int               `json:"id"`
-	ServiceId      int               `json:"service_id"`
-	Namespace      string            `json:"namespace"`
-	Version        int               `json:"version"`
-	Configurations map[string]string `json:"configurations"`
+type namespaceStore struct {
+	Id            int    `json:"id"`
+	ServiceId     int    `json:"service_id"`
+	Namespace     string `json:"namespace"`
+	ActiveVersion int    `json:"version"`
 }
 
-type configurationView struct {
+type namespaceView struct {
 	Namespace     string            `json:"namespace"`
 	Configuration map[string]string `json:"configurations"`
 }

@@ -24,9 +24,9 @@ func isNamespaceExist(service_id int, namespace string) (bool, error) {
 	return count > 0, nil
 }
 
-func createNewNamespace(configStore configurationStore) error {
+func createNewNamespace(configStore namespaceStore, configurations map[string]string) error {
 	db := context.GetDB()
-	configjson, err := json.Marshal(configStore.Configurations)
+	configjson, err := json.Marshal(configurations)
 	isNamespaceExist, err := isNamespaceExist(configStore.ServiceId, configStore.Namespace)
 	if isNamespaceExist {
 		return errors.New("Namespace already exist for the service")
@@ -43,16 +43,16 @@ func createNewNamespace(configStore configurationStore) error {
 	return err
 }
 
-func retrieveAllNamespace(service_id int) ([]configurationStore, error) {
+func retrieveAllNamespace(service_id int) ([]namespaceStore, error) {
 	db := context.GetDB()
 	rows, err := db.Query(retrieveAllNamespaceQuery, service_id)
 	if err != nil {
 		return nil, err
 	}
-	var configurations []configurationStore
+	var configurations []namespaceStore
 	for rows.Next() {
-		var configuration configurationStore
-		err = rows.Scan(&configuration.Namespace, &configuration.Version)
+		var configuration namespaceStore
+		err = rows.Scan(&configuration.Namespace, &configuration.ActiveVersion)
 		if err != nil {
 			return nil, err
 		}
