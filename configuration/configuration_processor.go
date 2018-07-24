@@ -13,3 +13,15 @@ func getConfigurationProcess(serviceName, namespace string, version int) (*confi
 	}
 	return config, nil
 }
+
+func getLatestVersionProcess(serviceName, namespace string) (int, error) {
+	service, err := services.FindOneServiceByName(serviceName)
+	if err != nil {
+		return 0, err
+	}
+	version, err := getLatestVersionForNamespace(service.Id, namespace)
+	if err != nil {
+		return 0, err
+	}
+	return version, nil
+}
