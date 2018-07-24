@@ -54,3 +54,23 @@ func GetLatestVersionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(versionJSON))
 }
+
+func CreateNewVersionHandler(w http.ResponseWriter, r *http.Request) {
+	var config configView
+	routerVar := mux.Vars(r)
+	serviceName := routerVar["service_name"]
+	namespace := routerVar["namespace"]
+	err := json.NewDecoder(r.Body).Decode(&config)
+	if err != nil {
+		log.Println("CreateNewConfigVersion: ", err.Error())
+		response.ResponseHelper(w, http.StatusBadRequest, response.ContentText, "")
+		return
+	}
+	err = createNewVersionProcess(serviceName, namespace, config)
+	if err != nil {
+		log.Println("CreateNewConfigVersion: ", err.Error())
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+		return
+	}
+	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "")
+}

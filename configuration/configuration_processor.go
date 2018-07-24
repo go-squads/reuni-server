@@ -25,3 +25,12 @@ func getLatestVersionProcess(serviceName, namespace string) (int, error) {
 	}
 	return version, nil
 }
+
+func createNewVersionProcess(serviceName, namespace string, config configView) error {
+	service, err := services.FindOneServiceByName(serviceName)
+	if err != nil {
+		return err
+	}
+	createNewVersion(service.Id, namespace, config)
+	return nil
+}
