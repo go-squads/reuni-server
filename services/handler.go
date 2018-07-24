@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-squads/reuni-server/response"
+	"github.com/gorilla/mux"
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,4 +56,22 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
+}
+
+func ValidateToken(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["service_name"]
+	token := r.Header.Get("Authorization")
+	result, err := validateTokenProcess(serviceName, token)
+	if err != nil {
+		log.Println("ValidateToken: ", err.Error())
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+		return
+	}
+	if result {
+		response.ResponseHelper(w, http.StatusOK, response.ContentText, "true")
+		return
+	} else {
+		response.ResponseHelper(w, http.StatusOK, response.ContentText, "false")
+		return
+	}
 }
