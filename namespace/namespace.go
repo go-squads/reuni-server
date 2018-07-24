@@ -1,4 +1,4 @@
-package configurations
+package namespace
 
 type configurationStore struct {
 	Id             int               `json:"id"`

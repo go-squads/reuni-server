@@ -1,4 +1,4 @@
-package configurations
+package namespace
 
 import (
 	"encoding/json"

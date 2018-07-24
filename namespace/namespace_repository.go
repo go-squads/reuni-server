@@ -1,4 +1,4 @@
-package configurations
+package namespace
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	context "github.com/go-squads/reuni-server/appcontext"
 )
 
-const createNewNamespaceQuery = "INSERT INTO configurations(service_id, namespace,config_store) VALUES ($1,$2,$3)"
-const retrieveAllNamespaceQuery = "SELECT namespace,MAX(version) namespace FROM configurations WHERE service_id = $1 GROUP BY namespace"
+const createNewNamespaceQuery = "INSERT INTO namespaces(service_id, namespace,config_store) VALUES ($1,$2,$3)"
+const retrieveAllNamespaceQuery = "SELECT namespace,active_version namespace FROM namespaces WHERE service_id = $1"
 
 func createNewNamespace(configStore configurationStore) error {
 	db := context.GetDB()
