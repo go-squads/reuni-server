@@ -20,5 +20,5 @@
 bin/
 tmp/
 vendor/
-
+keys
 # End of https://www.gitignore.io/api/go
