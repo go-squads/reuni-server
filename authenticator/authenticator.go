@@ -16,7 +16,7 @@ import (
 func createJWTHeader() []byte {
 	var header map[string]string
 	header = make(map[string]string)
-	header["alg"] = "RS512"
+	header["alg"] = "RS256"
 	header["typ"] = "JWT"
 	headerJSON, _ := json.Marshal(header)
 	return headerJSON
@@ -33,5 +33,9 @@ func CreateUserJWToken(payload []byte) string {
 	header := createJWTHeader()
 	tokenBase := helper.EncodeSegment(header) + "." + helper.EncodeSegment(payload)
 	signature, _ := rsa.SignPKCS1v15(rand.Reader, appcontext.GetKeys().PrivateKey, crypto.SHA256, hashJWT(tokenBase).Sum(nil))
+	err := rsa.VerifyPKCS1v15(appcontext.GetKeys().PublicKey, crypto.SHA256, hashJWT(tokenBase).Sum(nil), signature)
+	if err != nil {
+		log.Println("CreateUserJWToken: ", err.Error())
+	}
 	return tokenBase + "." + helper.EncodeSegment(signature)
 }

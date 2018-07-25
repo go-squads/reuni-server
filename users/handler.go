@@ -3,6 +3,7 @@ package users
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -53,6 +54,6 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("LoginUserHandler: ", string(userData), "succesfully login")
-	authenticator.CreateUserJWToken(userData)
-	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(userData))
+	token := authenticator.CreateUserJWToken(userData)
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\"}", token))
 }
