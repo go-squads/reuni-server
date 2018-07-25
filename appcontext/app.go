@@ -9,32 +9,41 @@ import (
 )
 
 type appContext struct {
-	db *sql.DB
+	db  *sql.DB
+	key *config.Keys
 }
 
 var context *appContext
 
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func initDB() (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", config.GetConnectionString())
-
-	if err != nil {
-		panic(err)
-	}
-
+	check(err)
 	err = db.Ping()
-
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 	return db, nil
+}
+
+func initKey() (*config.Keys, error) {
+	keys, err := config.GetKeys()
+	check(err)
+	return keys, nil
 }
 
 func InitContext() {
 	db, _ := initDB()
-	log.Print("Connection Established")
+	log.Print("Database Connection Established")
+	key, _ := initKey()
+	log.Print("RSA Keys fetched")
 	context = &appContext{
-		db: db,
+		db:  db,
+		key: key,
 	}
 }
 
