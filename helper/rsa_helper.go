@@ -1,4 +1,4 @@
-package authenticator
+package helper
 
 import (
 	"crypto/rand"

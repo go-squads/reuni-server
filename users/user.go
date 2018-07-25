@@ -12,6 +12,13 @@ type user struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+type userToken struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 type userv struct {
 	Name     string `json:"name"`
 	Username string `json:"username"`

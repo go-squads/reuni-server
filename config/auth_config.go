@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-squads/reuni-server/authenticator"
+	"github.com/go-squads/reuni-server/helper"
 )
 
 type Keys struct {
@@ -27,9 +27,9 @@ func GetKeys() (*Keys, error) {
 	check(err)
 	log.Println(string(pubKeyByte))
 	log.Println(string(privKeyByte))
-	privKey, err := authenticator.ParseRsaPrivateKeyFromPemStr(string(privKeyByte))
+	privKey, err := helper.ParseRsaPrivateKeyFromPemStr(string(privKeyByte))
 	check(err)
-	pubKey, err := authenticator.ParseRsaPublicKeyFromPemStr(string(pubKeyByte))
+	pubKey, err := helper.ParseRsaPublicKeyFromPemStr(string(pubKeyByte))
 	return &Keys{
 		PrivateKey: privKey,
 		PublicKey:  pubKey,

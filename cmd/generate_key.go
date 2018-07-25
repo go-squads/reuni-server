@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-squads/reuni-server/authenticator"
+	"github.com/go-squads/reuni-server/helper"
 )
 
 func GenerateRSAKey() {
-	priv, pub := authenticator.GenerateRsaKeyPair()
-	privText := authenticator.ExportRsaPrivateKeyAsPemStr(priv)
-	pubText, err := authenticator.ExportRsaPublicKeyAsPemStr(pub)
+	priv, pub := helper.GenerateRsaKeyPair()
+	privText := helper.ExportRsaPrivateKeyAsPemStr(priv)
+	pubText, err := helper.ExportRsaPublicKeyAsPemStr(pub)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

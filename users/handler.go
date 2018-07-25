@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-squads/reuni-server/authenticator"
 	"github.com/go-squads/reuni-server/response"
 )
 
@@ -48,11 +49,10 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		default:
 			response.RespondWithError(w, http.StatusInternalServerError, response.ContentText, "")
 		}
+		log.Println("LoginUserHandler: ", err.Error())
 		return
 	}
-
+	log.Println("LoginUserHandler: ", string(userData), "succesfully login")
+	authenticator.CreateUserJWToken(userData)
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(userData))
-}
-func AuthUserHandler(w http.ResponseWriter, r *http.Request) {
-
 }

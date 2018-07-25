@@ -50,3 +50,7 @@ func InitContext() {
 func GetDB() *sql.DB {
 	return context.db
 }
+
+func GetKeys() *config.Keys {
+	return context.key
+}

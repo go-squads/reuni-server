@@ -3,6 +3,7 @@ package users
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"time"
 )
 
 func createUserProcessor(userdata userv) error {
@@ -21,4 +22,8 @@ func createUserEncryptPassword(salt string, password string) string {
 	h.Write([]byte(passwordStore))
 
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
+}
+
+func makeTimestamp() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
