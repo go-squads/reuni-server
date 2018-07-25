@@ -10,10 +10,10 @@ import (
 
 func CreateRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/services", services.GetAllServicesHandler).Methods("GET")
+	router.HandleFunc("/services", withAuthenticator(services.GetAllServicesHandler)).Methods("GET")
 	router.HandleFunc("/services", services.CreateServiceHandler).Methods("POST")
 	router.HandleFunc("/services", services.DeleteServiceHandler).Methods("DELETE")
-	router.HandleFunc("/services/{service_name}/namespaces", namespace.RetrieveAllNamespaceHandler).Methods("GET")
+	router.HandleFunc("/services/{service_name}/namespaces", withAuthenticator(namespace.RetrieveAllNamespaceHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/namespaces", namespace.CreateNamespace).Methods("POST")
 	router.HandleFunc("/services/{service_name}/validatetoken", services.ValidateToken).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}/latest", configuration.GetLatestVersionHandler).Methods("GET")
