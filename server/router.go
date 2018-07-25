@@ -19,7 +19,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/services/{service_name}/{namespace}/latest", configuration.GetLatestVersionHandler).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}/{version}", configuration.GetConfigurationHandler).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}", configuration.CreateNewVersionHandler).Methods("POST")
-	router.HandleFunc("/users", users.CreateUserHandler).Methods("POST")
-	router.HandleFunc("/loginuser", users.LoginUserHandler).Methods("POST")
+	router.HandleFunc("/signup", users.CreateUserHandler).Methods("POST")
+	router.HandleFunc("/login", users.LoginUserHandler).Methods("POST")
 	return router
 }

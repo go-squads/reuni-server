@@ -3,7 +3,7 @@ package users
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/response"
@@ -15,17 +15,18 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if err != nil {
-		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "CreateUserHandler: error parsing body"+err.Error())
+		log.Println("CreateUserHandler: " + err.Error())
+		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
 		return
 	}
 
 	err = createUserProcessor(userdata)
 	if err != nil {
-		response.RespondWithError(w, http.StatusNotFound, response.ContentJson, "CreateUserHandler: error writing to database"+err.Error())
+		log.Println("CreateUserHandler: " + err.Error())
+		response.RespondWithError(w, http.StatusConflict, response.ContentJson, "error writing to database")
 		return
 	}
-
-	response.ResponseHelper(w, http.StatusCreated, response.ContentJson, "201 Created")
+	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
 }
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,9 +35,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	logindata.Password = createUserEncryptPassword(logindata.Username, logindata.Password)
-	fmt.Println(logindata.Username, logindata.Password)
 	if err != nil {
-		response.RespondWithError(w, http.StatusNotFound, response.ContentJson, "LoginUserHandler: error parsing body")
+		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
 		return
 	}
 
@@ -44,12 +44,15 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			response.RespondWithError(w, http.StatusNotFound, response.ContentJson, "Username/Password wrong")
+			response.RespondWithError(w, http.StatusUnauthorized, response.ContentJson, "wrong username or password")
 		default:
-			response.RespondWithError(w, http.StatusInternalServerError, response.ContentJson, string(err.Error()))
+			response.RespondWithError(w, http.StatusInternalServerError, response.ContentText, "")
 		}
 		return
 	}
 
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(userData))
+}
+func AuthUserHandler(w http.ResponseWriter, r *http.Request) {
+
 }
