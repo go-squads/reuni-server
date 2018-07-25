@@ -23,7 +23,7 @@ func GenerateRSAKey() {
 	}
 	defer privFile.Close()
 
-	pubFile, fileErr := os.Create("./key/public")
+	pubFile, fileErr := os.Create("./keys/public")
 	if fileErr != nil {
 		fmt.Println(fileErr.Error())
 		return
@@ -32,5 +32,5 @@ func GenerateRSAKey() {
 
 	fmt.Fprintf(privFile, "%v\n", privText)
 	fmt.Fprintf(pubFile, "%v\n", pubText)
-	fmt.Println("Keys created at keys/")
+	fmt.Println("Keys created at keys/l")
 }
