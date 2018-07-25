@@ -41,12 +41,13 @@ func GetLatestVersionHandler(w http.ResponseWriter, r *http.Request) {
 	serviceName := routerVar["service_name"]
 	namespace := routerVar["namespace"]
 	version, err := getLatestVersionProcess(serviceName, namespace)
+	versionv := versionView{Version: version}
 	if err != nil {
 		log.Println("GetConfig: ", err.Error())
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 		return
 	}
-	versionJSON, err := json.Marshal(version)
+	versionJSON, err := json.Marshal(versionv)
 	if err != nil {
 		log.Println("GetConfig: ", err.Error())
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
