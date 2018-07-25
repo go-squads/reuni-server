@@ -26,6 +26,8 @@ services:
       DB_PASS: reunidev123
       DB_PORT: 5432
       DB_NAME: reunidev
+      PUBLIC_KEY_PATH: ./keys/public
+      PRIVATE_KEY_PATH: ./keys/private
     links:
       - db
   pg-admin:
