@@ -75,3 +75,16 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetToken(w http.ResponseWriter, r *http.Request) {
+	serviceName := mux.Vars(r)["service_name"]
+	token, err := getServiceToken(serviceName)
+	if err != nil {
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+	}
+	tokenView := serviceToken{
+		Token: token,
+	}
+	tokenJSON, _ := json.Marshal(tokenView)
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(tokenJSON))
+}
