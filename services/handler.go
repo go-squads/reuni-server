@@ -61,7 +61,7 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["service_name"]
 	token := r.Header.Get("Authorization")
-	result, err := validateTokenProcess(serviceName, token)
+	result, err := ValidateTokenProcess(serviceName, token)
 	if err != nil {
 		log.Println("ValidateToken: ", err.Error())
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
