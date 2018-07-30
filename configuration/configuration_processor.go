@@ -31,6 +31,18 @@ func createNewVersionProcess(serviceName, namespace string, config configView) e
 	if err != nil {
 		return err
 	}
-	createNewVersion(service.Id, namespace, config)
+	latestVersion, err := getLatestVersionForNamespace(service.Id, namespace)
+	if err != nil {
+		return err
+	}
+
+	err = createNewVersion(service.Id, namespace, config, latestVersion+1)
+	if err != nil {
+		return err
+	}
+	err = updateNamespaceActiveVersion(service.Id, namespace, latestVersion+1)
+	if err != nil {
+		return err
+	}
 	return nil
 }
