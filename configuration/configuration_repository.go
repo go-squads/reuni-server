@@ -11,6 +11,7 @@ const (
 	getLatestVersionForNamespaceQuery = "SELECT MAX(version) FROM configurations WHERE service_id=$1 AND namespace=$2"
 	createNewVersionQuery             = "INSERT INTO configurations(service_id, namespace, version, config_store) VALUES($1,$2,$3,$4)"
 	updateNamespaceActiveVersionQuery = "UPDATE namespaces SET active_version=$1 WHERE service_id=$2 AND namespace=$3"
+	getVersionsQuery                  = "SELECT version FROM configurations WHERE service_id=$1 AND namespace=$2"
 )
 
 func getConfiguration(serviceId int, namespace string, version int) (*configView, error) {
@@ -57,4 +58,26 @@ func updateNamespaceActiveVersion(serviceId int, namespace string, version int) 
 		return err
 	}
 	return nil
+}
+
+func getVersions(serviceId int, namespace string) ([]int, error) {
+	rows, err := context.GetDB().Query(getVersionsQuery, serviceId, namespace)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var versions []int
+	for rows.Next() {
+		var version int
+		err = rows.Scan(&version)
+
+		if err != nil {
+			return nil, err
+		}
+		versions = append(versions, version)
+	}
+	return versions, nil
 }

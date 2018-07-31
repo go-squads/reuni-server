@@ -17,6 +17,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/services/{service_name}/namespaces", withAuthenticator(namespace.CreateNamespace)).Methods("POST")
 	router.HandleFunc("/services/{service_name}/validatetoken", withAuthenticator(services.ValidateToken)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/token", withAuthenticator(services.GetToken)).Methods("GET")
+	router.HandleFunc("/services/{service_name}/{namespace}/versions", withAuthenticator(configuration.GetConfigurationVersionsHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}/latest", withAuthenticator(configuration.GetLatestVersionHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}/agent", validateAgentTokenMiddleware(configuration.GetLatestVersionHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}/{version}/agent", validateAgentTokenMiddleware(configuration.GetConfigurationHandler))

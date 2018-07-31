@@ -75,3 +75,16 @@ func CreateNewVersionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "")
 }
+
+func GetConfigurationVersionsHandler(w http.ResponseWriter, r *http.Request) {
+	routerVar := mux.Vars(r)
+	serviceName := routerVar["service_name"]
+	namespace := routerVar["namespace"]
+	resp, err := getConfigurationVersionsProcess(serviceName, namespace)
+	if err != nil {
+		log.Println("GetConfigurationHandler:", err.Error())
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, resp)
+}

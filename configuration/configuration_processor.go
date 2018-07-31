@@ -1,6 +1,10 @@
 package configuration
 
-import "github.com/go-squads/reuni-server/services"
+import (
+	"encoding/json"
+
+	"github.com/go-squads/reuni-server/services"
+)
 
 func getConfigurationProcess(serviceName, namespace string, version int) (*configView, error) {
 	service, err := services.FindOneServiceByName(serviceName)
@@ -45,4 +49,25 @@ func createNewVersionProcess(serviceName, namespace string, config configView) e
 		return err
 	}
 	return nil
+}
+
+func getConfigurationVersionsProcess(serviceName, namespace string) (string, error) {
+	service, err := services.FindOneServiceByName(serviceName)
+	if err != nil {
+		return "", err
+	}
+
+	versions, err := getVersions(service.Id, namespace)
+	versionsv := versionsView{
+		Versions: versions,
+	}
+	if err != nil {
+		return "", err
+	}
+	versionsJSON, err := json.Marshal(versionsv)
+	if err != nil {
+		return "", err
+	}
+	return string(versionsJSON), nil
+
 }

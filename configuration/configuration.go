@@ -8,3 +8,7 @@ type configView struct {
 type versionView struct {
 	Version int `json:"version"`
 }
+
+type versionsView struct {
+	Versions []int `json:"versions"`
+}
