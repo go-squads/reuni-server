@@ -9,7 +9,7 @@ dep:
 
 test:
 	@echo "Testing the application"
-	@go test .
+	@go test ./... -v
 
 build: dep | test
 	@echo "Building Binary to $(BIN)/$(APP_NAME)" 

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-squads/reuni-server/appcontext"
+
 	"github.com/go-squads/reuni-server/response"
 	"github.com/go-squads/reuni-server/services"
 	"github.com/gorilla/mux"
@@ -17,12 +19,13 @@ func withAuthenticator(next http.HandlerFunc) http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 		token = strings.TrimLeft(token, "Bearer")
 		token = strings.TrimLeft(token, " ")
-		obj, res := authenticator.VerifyUserJWToken(token)
-		if res {
+		obj, err := authenticator.VerifyUserJWToken(token, appcontext.GetKeys().PublicKey)
+		if obj != nil {
 			log.Println("User", obj, "access from", r.RemoteAddr)
 			next.ServeHTTP(w, r)
 		} else {
 			log.Println("Access from", r.RemoteAddr, "not authorized")
+			log.Println(err.Error())
 			response.ResponseHelper(w, http.StatusUnauthorized, response.ContentText, "")
 			return
 		}

@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-squads/reuni-server/appcontext"
+
 	"github.com/go-squads/reuni-server/authenticator"
 	"github.com/go-squads/reuni-server/response"
 )
@@ -54,6 +56,9 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("LoginUserHandler: ", string(userData), "succesfully login")
-	token := authenticator.CreateUserJWToken(userData)
+	token, err := authenticator.CreateUserJWToken(userData, appcontext.GetKeys().PrivateKey)
+	if err != nil {
+		log.Println(err.Error())
+	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\"}", token))
 }
