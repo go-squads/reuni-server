@@ -30,6 +30,7 @@ func GetKeys() (*Keys, error) {
 	privKey, err := helper.ParseRsaPrivateKeyFromPemStr(string(privKeyByte))
 	check(err)
 	pubKey, err := helper.ParseRsaPublicKeyFromPemStr(string(pubKeyByte))
+	check(err)
 	return &Keys{
 		PrivateKey: privKey,
 		PublicKey:  pubKey,
