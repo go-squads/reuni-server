@@ -1,5 +1,7 @@
 # Reuni API
 
+## Read this docs for more complete documentation: [https://go-squads.gitbook.io/reuni]
+
 Reuni system is a centralized service re-configuration manager for microservices architecture.
 
 This repository is intended for the RESTful API server for the reuni system. This API provide:
