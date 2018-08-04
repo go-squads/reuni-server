@@ -21,6 +21,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/jmoiron/sqlx"
+  packages = [
+    ".",
+    "reflectx"
+  ]
+  revision = "0dae4fefe7c0e190f7b5a78dac28a1c82cc8d849"
+
+[[projects]]
+  branch = "master"
   name = "github.com/lib/pq"
   packages = [
     ".",
@@ -43,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b89d0cdb3c09eff86ac82ac6a75a19c090299160be87bf61cd096fcde6fb0dca"
+  inputs-digest = "fcce6a6d43e8c048bcfc3b879e9299462c12e8f0df63099bbc9b526ccd0cec46"
   solver-name = "gps-cdcl"
   solver-version = 1

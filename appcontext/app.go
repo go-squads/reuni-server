@@ -1,15 +1,15 @@
 package appcontext
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/go-squads/reuni-server/config"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type appContext struct {
-	db  *sql.DB
+	db  *sqlx.DB
 	key *config.Keys
 }
 
@@ -21,9 +21,9 @@ func check(err error) {
 	}
 }
 
-func initDB() (*sql.DB, error) {
+func initDB() (*sqlx.DB, error) {
 
-	db, err := sql.Open("postgres", config.GetConnectionString())
+	db, err := sqlx.Open("postgres", config.GetConnectionString())
 	check(err)
 	err = db.Ping()
 	check(err)
@@ -47,7 +47,7 @@ func InitContext() {
 	}
 }
 
-func GetDB() *sql.DB {
+func GetDB() *sqlx.DB {
 	return context.db
 }
 
