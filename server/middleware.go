@@ -37,7 +37,7 @@ func validateAgentTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		serviceName := mux.Vars(r)["service_name"]
-		res, err := services.ValidateTokenProcess(serviceName, token)
+		res, err := services.ValidateTokenProcessor(serviceName, token)
 		if err != nil {
 			response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 			return

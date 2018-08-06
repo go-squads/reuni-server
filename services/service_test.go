@@ -6,19 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTokenRandomizerDifferentAtLeastAHundredThousandTry(t *testing.T) {
-	var data map[string]bool
-	data = make(map[string]bool)
-	for i := 0; i < 100000; i++ {
-		token := generateTokenProcessor()
-		if data[token] {
-			t.Fail()
-		} else {
-			data[token] = true
-		}
-	}
-}
-
 func TestIsServiceEmptyReturnTrue(t *testing.T) {
 	service := service{}
 	assert.True(t, service.IsEmpty())

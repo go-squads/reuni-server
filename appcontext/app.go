@@ -12,7 +12,7 @@ import (
 
 type appContext struct {
 	db     *sqlx.DB
-	helper *helper.QueryHelper
+	helper helper.QueryExecuter
 	key    *config.Keys
 }
 
@@ -53,10 +53,23 @@ func InitContext() {
 	}
 }
 
+func InitMockContext(q helper.QueryExecuter) {
+	priv, pub := helper.GenerateRsaKeyPair()
+	key := config.Keys{
+		PrivateKey: priv,
+		PublicKey:  pub,
+	}
+	context = &appContext{
+		key:    &key,
+		helper: q,
+	}
+
+}
+
 func GetDB() *sqlx.DB {
 	return context.db
 }
-func GetHelper() *helper.QueryHelper {
+func GetHelper() helper.QueryExecuter {
 	return context.helper
 }
 
