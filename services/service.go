@@ -9,6 +9,8 @@ type service struct {
 	CreatedAt          time.Time `json:"created_at"`
 }
 
+type services []service
+
 type servicev struct {
 	Name string `json:"name"`
 }

@@ -1,9 +1,8 @@
 package services
 
 import (
-	"log"
-
 	context "github.com/go-squads/reuni-server/appcontext"
+	"github.com/go-squads/reuni-server/helper"
 )
 
 const (
@@ -14,55 +13,44 @@ const (
 	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
 )
 
-func getAll() ([]service, error) {
-	var services []service
-
-	db := context.GetDB()
-	rows, err := db.Query(getAllServicesQuery)
+func getAll(q helper.QueryExecuter) ([]map[string]interface{}, error) {
+	data, err := q.DoQuery(getAllServicesQuery)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	return data, nil
+}
 
-	for rows.Next() {
-		var service service
-		err = rows.Scan(&service.Id, &service.Name, &service.CreatedAt)
+func createService(q helper.QueryExecuter, servicestore service) error {
+	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.AuthorizationToken)
+	return err
+}
 
-		if err != nil {
-			log.Fatal(err)
-		}
-		services = append(services, service)
+func deleteService(q helper.QueryExecuter, servicestore service) error {
+	_, err := q.DoQuery(deleteServiceQuery, servicestore.Name)
+	return err
+}
+
+func findOneServiceByName(q helper.QueryExecuter, name string) (service, error) {
+	data, err := q.DoQuery(findOneServiceByNameQuery, name)
+	if err != nil {
+		return service{}, err
 	}
-	log.Printf("%v", services)
-	return services, nil
-}
-
-func createService(servicestore service) error {
-	db := context.GetDB()
-	_, err := db.Query(createServiceQuery, servicestore.Name, servicestore.AuthorizationToken)
-	return err
-}
-
-func deleteService(servicestore service) error {
-	db := context.GetDB()
-	_, err := db.Query(deleteServiceQuery, servicestore.Name)
-	return err
+	var dest service
+	err = helper.ParseMaps(data[0], dest)
+	return dest, err
 }
 
 func FindOneServiceByName(name string) (service, error) {
-	service := service{}
-	db := context.GetDB()
-	row := db.QueryRow(findOneServiceByNameQuery, name)
-	err := row.Scan(&service.Id, &service.Name, &service.CreatedAt)
-	return service, err
+	return findOneServiceByName(context.GetHelper(), name)
 }
 
-func getServiceToken(name string) (string, error) {
+func getServiceToken(q helper.QueryExecuter, name string) (string, error) {
 	var token string
-	row := context.GetDB().QueryRow(getServiceTokenQuery, name)
-	err := row.Scan(&token)
+	data, err := q.DoQuery(getServiceTokenQuery, name)
 	if err != nil {
 		return "", err
 	}
+	helper.ParseMap(data[0]["token"], &token)
 	return token, nil
 }

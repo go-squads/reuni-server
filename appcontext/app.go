@@ -3,14 +3,17 @@ package appcontext
 import (
 	"log"
 
+	"github.com/go-squads/reuni-server/helper"
+
 	"github.com/go-squads/reuni-server/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type appContext struct {
-	db  *sqlx.DB
-	key *config.Keys
+	db     *sqlx.DB
+	helper *helper.QueryHelper
+	key    *config.Keys
 }
 
 var context *appContext
@@ -44,11 +47,17 @@ func InitContext() {
 	context = &appContext{
 		db:  db,
 		key: key,
+		helper: &helper.QueryHelper{
+			DB: db,
+		},
 	}
 }
 
 func GetDB() *sqlx.DB {
 	return context.db
+}
+func GetHelper() *helper.QueryHelper {
+	return context.helper
 }
 
 func GetKeys() *config.Keys {

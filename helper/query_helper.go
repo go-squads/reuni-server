@@ -5,19 +5,34 @@ import (
 )
 
 type QueryExecuter interface {
-	doQueryRow(query string, args ...interface{}) (interface{}, error)
-	doQuery(query string, structs interface{}, args ...interface{}) (struct{}, error)
+	DoQuery(query string, args ...interface{}) ([]map[string]interface{}, error)
 }
 
 type QueryHelper struct {
-	db *sqlx.DB
+	DB *sqlx.DB
 }
 
-func parseRows(rows *sqlx.Rows, type_struct interface{}) {
-
+func parseRows(rows *sqlx.Rows) ([]map[string]interface{}, error) {
+	var data []map[string]interface{}
+	for rows.Next() {
+		datum := make(map[string]interface{})
+		err := rows.MapScan(datum)
+		if err != nil {
+			return nil, err
+		}
+		data = append(data, datum)
+	}
+	return data, nil
 }
 
-func (q *QueryHelper) doQuery(query string, args ...interface{}) (interface{}, error) {
-	q.db.Query(query)
-	return nil, nil
+func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]interface{}, error) {
+	rows, err := q.DB.Queryx(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	data, err := parseRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

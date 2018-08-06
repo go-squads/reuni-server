@@ -5,12 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/response"
 	"github.com/gorilla/mux"
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
-	services, err := getAll()
+	services, err := getAllProcess()
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -78,7 +79,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 func GetToken(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["service_name"]
-	token, err := getServiceToken(serviceName)
+	token, err := getServiceToken(context.GetHelper(), serviceName)
 	if err != nil {
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 	}
