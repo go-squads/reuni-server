@@ -3,6 +3,7 @@ package namespace
 import (
 	"encoding/json"
 
+	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/services"
 )
 
@@ -14,7 +15,7 @@ func createNewNamespaceProcess(serviceName string, namespacev namespaceView) err
 	namespaceStore.ActiveVersion = 1
 	configurations := namespacev.Configuration
 
-	err = createNewNamespace(namespaceStore, configurations)
+	err = createNewNamespace(context.GetHelper(), namespaceStore, configurations)
 	return err
 }
 
@@ -23,7 +24,7 @@ func retrieveAllNamespaceProcess(serviceName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	namespaces, err := retrieveAllNamespace(service.Id)
+	namespaces, err := retrieveAllNamespace(context.GetHelper(), service.Id)
 	if err != nil {
 		return nil, err
 	}
