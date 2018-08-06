@@ -7,7 +7,7 @@ import (
 	context "github.com/go-squads/reuni-server/appcontext"
 )
 
-func getAllProcess() ([]service, error) {
+func getAllProcessor() ([]service, error) {
 	data, err := getAll(context.GetHelper())
 	if err != nil {
 		return nil, err
@@ -15,29 +15,26 @@ func getAllProcess() ([]service, error) {
 	return data, nil
 }
 
-func createServiceProcess(servicedata servicev) error {
+func createServiceProcessor(servicedata servicev) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
-	serviceStore.AuthorizationToken = generateToken()
+	serviceStore.AuthorizationToken = generateTokenProcessor()
 	return createService(context.GetHelper(), serviceStore)
 }
 
-func deleteServiceProcess(servicedata servicev) error {
+func deleteServiceProcessor(servicedata servicev) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
 	return deleteService(context.GetHelper(), serviceStore)
 }
 
-func generateToken() string {
+func generateTokenProcessor() string {
 	randomBytes := make([]byte, 64)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		panic(err)
-	}
+	rand.Read(randomBytes)
 	return base64.StdEncoding.EncodeToString(randomBytes)[:64]
 }
 
-func ValidateTokenProcess(serviceName string, inputToken string) (bool, error) {
+func ValidateTokenProcessor(serviceName string, inputToken string) (bool, error) {
 	token, err := getServiceToken(context.GetHelper(), serviceName)
 	if err != nil {
 		return false, err

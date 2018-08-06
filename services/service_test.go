@@ -10,7 +10,7 @@ func TestTokenRandomizerDifferentAtLeastAHundredThousandTry(t *testing.T) {
 	var data map[string]bool
 	data = make(map[string]bool)
 	for i := 0; i < 100000; i++ {
-		token := generateToken()
+		token := generateTokenProcessor()
 		if data[token] {
 			t.Fail()
 		} else {

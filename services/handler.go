@@ -11,7 +11,7 @@ import (
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
-	services, err := getAllProcess()
+	services, err := getAllProcessor()
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -33,7 +33,7 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createServiceProcess(servicedata)
+	err = createServiceProcessor(servicedata)
 	if err != nil {
 		log.Println("CreateServiceHandler: error writing to database", err.Error())
 		return
@@ -51,7 +51,7 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = deleteServiceProcess(servicedata)
+	err = deleteServiceProcessor(servicedata)
 	if err != nil {
 		log.Println("DeleteServiceHandler: error writing to database", err.Error())
 		return
@@ -62,7 +62,7 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["service_name"]
 	token := r.Header.Get("Authorization")
-	result, err := ValidateTokenProcess(serviceName, token)
+	result, err := ValidateTokenProcessor(serviceName, token)
 	if err != nil {
 		log.Println("ValidateToken: ", err.Error())
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
