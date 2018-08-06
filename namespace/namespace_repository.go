@@ -3,6 +3,7 @@ package namespace
 import (
 	"encoding/json"
 	"errors"
+	"log"
 
 	"github.com/go-squads/reuni-server/helper"
 )
@@ -47,6 +48,7 @@ func retrieveAllNamespace(q helper.QueryExecuter, service_id int) ([]namespaceSt
 		return nil, err
 	}
 	var configurations []namespaceStore
-	err = helper.ParseMaps(data, &configurations)
+	log.Print(data)
+	err = helper.ParseMap(data, &configurations)
 	return configurations, nil
 }

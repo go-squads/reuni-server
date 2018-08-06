@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/go-squads/reuni-server/helper"
 )
@@ -33,6 +34,7 @@ func getLatestVersionForNamespace(q helper.QueryExecuter, serviceId int, namespa
 	if err != nil {
 		return 0, err
 	}
+	log.Println(data)
 	err = helper.ParseMap(data[0]["version"], &latestVersion)
 	return latestVersion, nil
 }
@@ -67,6 +69,7 @@ func getVersions(q helper.QueryExecuter, serviceId int, namespace string) ([]int
 		return nil, err
 	}
 	var versions []int
+	log.Print(data)
 	err = helper.ParseMap(data, &versions)
 	return versions, nil
 }

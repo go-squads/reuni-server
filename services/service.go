@@ -3,13 +3,11 @@ package services
 import "time"
 
 type service struct {
-	Id                 int       `json:"id"`
-	Name               string    `json:"name"`
-	AuthorizationToken string    `json:"authorization_token"`
-	CreatedAt          time.Time `json:"created_at"`
+	Id                 int        `json:"id"`
+	Name               string     `json:"name"`
+	AuthorizationToken string     `json:"authorization_token"`
+	CreatedAt          *time.Time `json:"created_at"`
 }
-
-type services []service
 
 type servicev struct {
 	Name string `json:"name"`
@@ -17,4 +15,12 @@ type servicev struct {
 
 type serviceToken struct {
 	Token string `json:"token"`
+}
+
+func (s *service) IsEmpty() bool {
+	return (s.Id == 0 && s.Name == "" && s.AuthorizationToken == "" && s.CreatedAt == nil)
+}
+
+func (s *serviceToken) IsEmpty() bool {
+	return s.Token == ""
 }

@@ -4,8 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
-	"github.com/go-squads/reuni-server/helper"
-
 	context "github.com/go-squads/reuni-server/appcontext"
 )
 
@@ -14,12 +12,7 @@ func getAllProcess() ([]service, error) {
 	if err != nil {
 		return nil, err
 	}
-	var services []service
-	err = helper.ParseMaps(data, &services)
-	if err != nil {
-		return nil, err
-	}
-	return services, nil
+	return data, nil
 }
 
 func createServiceProcess(servicedata servicev) error {

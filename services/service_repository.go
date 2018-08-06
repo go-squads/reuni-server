@@ -13,12 +13,27 @@ const (
 	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
 )
 
-func getAll(q helper.QueryExecuter) ([]map[string]interface{}, error) {
+func isSliceEmpty(s []service) bool {
+	for _, ss := range s {
+		if !ss.IsEmpty() {
+			return false
+		}
+	}
+	return true
+}
+
+func getAll(q helper.QueryExecuter) ([]service, error) {
 	data, err := q.DoQuery(getAllServicesQuery)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	var services []service
+	err = helper.ParseMap(data, &services)
+	if err != nil {
+		return nil, err
+	}
+
+	return services, nil
 }
 
 func createService(q helper.QueryExecuter, servicestore service) error {
@@ -37,7 +52,7 @@ func findOneServiceByName(q helper.QueryExecuter, name string) (service, error) 
 		return service{}, err
 	}
 	var dest service
-	err = helper.ParseMaps(data[0], dest)
+	err = helper.ParseMap(data[0], &dest)
 	return dest, err
 }
 
