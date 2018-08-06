@@ -24,3 +24,11 @@ func (s *service) IsEmpty() bool {
 func (s *serviceToken) IsEmpty() bool {
 	return s.Token == ""
 }
+func isSliceEmpty(s []service) bool {
+	for _, ss := range s {
+		if !ss.IsEmpty() {
+			return false
+		}
+	}
+	return true
+}

@@ -42,9 +42,13 @@ func ValidateTokenProcess(serviceName string, inputToken string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if token == inputToken {
+	if token.Token == inputToken {
 		return true, nil
 	} else {
 		return false, nil
 	}
+}
+
+func FindOneServiceByName(name string) (*service, error) {
+	return findOneServiceByName(context.GetHelper(), name)
 }

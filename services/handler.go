@@ -83,9 +83,6 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 	}
-	tokenView := serviceToken{
-		Token: token,
-	}
-	tokenJSON, _ := json.Marshal(tokenView)
+	tokenJSON, _ := json.Marshal(token)
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(tokenJSON))
 }

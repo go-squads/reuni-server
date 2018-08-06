@@ -1,7 +1,6 @@
 package services
 
 import (
-	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/helper"
 )
 
@@ -10,17 +9,8 @@ const (
 	createServiceQuery        = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
 	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
-	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
+	getServiceTokenQuery      = "SELECT authorization_token as token FROM services WHERE name = $1"
 )
-
-func isSliceEmpty(s []service) bool {
-	for _, ss := range s {
-		if !ss.IsEmpty() {
-			return false
-		}
-	}
-	return true
-}
 
 func getAll(q helper.QueryExecuter) ([]service, error) {
 	data, err := q.DoQuery(getAllServicesQuery)
@@ -32,7 +22,6 @@ func getAll(q helper.QueryExecuter) ([]service, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return services, nil
 }
 
@@ -46,26 +35,28 @@ func deleteService(q helper.QueryExecuter, servicestore service) error {
 	return err
 }
 
-func findOneServiceByName(q helper.QueryExecuter, name string) (service, error) {
+func findOneServiceByName(q helper.QueryExecuter, name string) (*service, error) {
 	data, err := q.DoQuery(findOneServiceByNameQuery, name)
 	if err != nil {
-		return service{}, err
+		return nil, err
 	}
 	var dest service
 	err = helper.ParseMap(data[0], &dest)
-	return dest, err
+	if err != nil {
+		return nil, err
+	}
+	return &dest, err
 }
 
-func FindOneServiceByName(name string) (service, error) {
-	return findOneServiceByName(context.GetHelper(), name)
-}
-
-func getServiceToken(q helper.QueryExecuter, name string) (string, error) {
-	var token string
+func getServiceToken(q helper.QueryExecuter, name string) (*serviceToken, error) {
+	var token serviceToken
 	data, err := q.DoQuery(getServiceTokenQuery, name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	helper.ParseMap(data[0]["token"], &token)
-	return token, nil
+	err = helper.ParseMap(data[0], &token)
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
 }
