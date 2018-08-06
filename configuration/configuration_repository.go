@@ -3,7 +3,7 @@ package configuration
 import (
 	"encoding/json"
 
-	context "github.com/go-squads/reuni-server/appcontext"
+	"github.com/go-squads/reuni-server/helper"
 )
 
 const (
@@ -14,70 +14,59 @@ const (
 	getVersionsQuery                  = "SELECT version FROM configurations WHERE service_id=$1 AND namespace=$2"
 )
 
-func getConfiguration(serviceId int, namespace string, version int) (*configView, error) {
+func getConfiguration(q helper.QueryExecuter, serviceId int, namespace string, version int) (*configView, error) {
 	var config configView
-	var configJSON string
-	row := context.GetDB().QueryRow(getConfigurationQuery, serviceId, namespace, version)
-	err := row.Scan(&config.Version, &configJSON)
+	data, err := q.DoQuery(getConfigurationQuery, serviceId, namespace, version)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal([]byte(configJSON), &config.Configuration)
+	err = helper.ParseMap(data[0], &config.Configuration)
 	if err != nil {
 		return nil, err
 	}
 	return &config, err
 }
 
-func getLatestVersionForNamespace(serviceId int, namespace string) (int, error) {
+func getLatestVersionForNamespace(q helper.QueryExecuter, serviceId int, namespace string) (int, error) {
 	var latestVersion int
-	row := context.GetDB().QueryRow(getLatestVersionForNamespaceQuery, serviceId, namespace)
-	err := row.Scan(&latestVersion)
+	data, err := q.DoQuery(getLatestVersionForNamespaceQuery, serviceId, namespace)
 	if err != nil {
 		return 0, err
 	}
+	err = helper.ParseMap(data[0]["version"], &latestVersion)
 	return latestVersion, nil
 }
 
-func createNewVersion(serviceId int, namespace string, config configView, version int) error {
+func createNewVersion(q helper.QueryExecuter, serviceId int, namespace string, config configView, version int) error {
 	configJSON, err := json.Marshal(config.Configuration)
 	if err != nil {
 		return err
 	}
-	_, err = context.GetDB().Query(createNewVersionQuery, serviceId, namespace, version, configJSON)
+	_, err = q.DoQuery(createNewVersionQuery, serviceId, namespace, version, configJSON)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func updateNamespaceActiveVersion(serviceId int, namespace string, version int) error {
+func updateNamespaceActiveVersion(q helper.QueryExecuter, serviceId int, namespace string, version int) error {
 
-	_, err := context.GetDB().Query(updateNamespaceActiveVersionQuery, version, serviceId, namespace)
+	_, err := q.DoQuery(updateNamespaceActiveVersionQuery, version, serviceId, namespace)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func getVersions(serviceId int, namespace string) ([]int, error) {
-	rows, err := context.GetDB().Query(getVersionsQuery, serviceId, namespace)
+func getVersions(q helper.QueryExecuter, serviceId int, namespace string) ([]int, error) {
+	data, err := q.DoQuery(getVersionsQuery, serviceId, namespace)
 	if err != nil {
 		return nil, err
 	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 	var versions []int
-	for rows.Next() {
-		var version int
-		err = rows.Scan(&version)
-
-		if err != nil {
-			return nil, err
-		}
-		versions = append(versions, version)
-	}
+	err = helper.ParseMap(data, &versions)
 	return versions, nil
 }

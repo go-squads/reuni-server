@@ -3,6 +3,7 @@ package configuration
 import (
 	"encoding/json"
 
+	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/services"
 )
 
@@ -11,7 +12,7 @@ func getConfigurationProcess(serviceName, namespace string, version int) (*confi
 	if err != nil {
 		return nil, err
 	}
-	config, err := getConfiguration(service.Id, namespace, version)
+	config, err := getConfiguration(context.GetHelper(), service.Id, namespace, version)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +24,7 @@ func getLatestVersionProcess(serviceName, namespace string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	version, err := getLatestVersionForNamespace(service.Id, namespace)
+	version, err := getLatestVersionForNamespace(context.GetHelper(), service.Id, namespace)
 	if err != nil {
 		return 0, err
 	}
@@ -35,16 +36,16 @@ func createNewVersionProcess(serviceName, namespace string, config configView) e
 	if err != nil {
 		return err
 	}
-	latestVersion, err := getLatestVersionForNamespace(service.Id, namespace)
+	latestVersion, err := getLatestVersionForNamespace(context.GetHelper(), service.Id, namespace)
 	if err != nil {
 		return err
 	}
 
-	err = createNewVersion(service.Id, namespace, config, latestVersion+1)
+	err = createNewVersion(context.GetHelper(), service.Id, namespace, config, latestVersion+1)
 	if err != nil {
 		return err
 	}
-	err = updateNamespaceActiveVersion(service.Id, namespace, latestVersion+1)
+	err = updateNamespaceActiveVersion(context.GetHelper(), service.Id, namespace, latestVersion+1)
 	if err != nil {
 		return err
 	}
@@ -57,7 +58,7 @@ func getConfigurationVersionsProcess(serviceName, namespace string) (string, err
 		return "", err
 	}
 
-	versions, err := getVersions(service.Id, namespace)
+	versions, err := getVersions(context.GetHelper(), service.Id, namespace)
 	versionsv := versionsView{
 		Versions: versions,
 	}
