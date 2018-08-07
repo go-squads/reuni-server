@@ -9,7 +9,7 @@ const (
 	createServiceQuery        = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
 	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
-	getServiceTokenQuery      = "SELECT authorization_token as token FROM services WHERE name = $1"
+	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
 )
 
 func getAll(q helper.QueryExecuter) ([]service, error) {
