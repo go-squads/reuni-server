@@ -15,8 +15,8 @@ func createNewNamespaceProcess(serviceName string, namespacev namespaceView) err
 	namespaceStore.Namespace = namespacev.Namespace
 	namespaceStore.ActiveVersion = 1
 	configurations := namespacev.Configuration
-
-	isNamespaceExist, err := isNamespaceExist(context.GetHelper(), namespaceStore.ServiceId, namespaceStore.Namespace)
+	rep := initRepository(context.GetHelper())
+	isNamespaceExist, err := rep.isNamespaceExist(namespaceStore.ServiceId, namespaceStore.Namespace)
 	if err != nil {
 		return err
 	}
@@ -25,11 +25,11 @@ func createNewNamespaceProcess(serviceName string, namespacev namespaceView) err
 		return errors.New("Namespace already exist for the service")
 	}
 
-	err = createNewNamespace(context.GetHelper(), &namespaceStore)
+	err = rep.createNewNamespace(&namespaceStore)
 	if err != nil {
 		return err
 	}
-	err = createConfiguration(context.GetHelper(), service.Id, namespacev.Namespace, configurations)
+	err = rep.createConfiguration(service.Id, namespacev.Namespace, configurations)
 
 	return err
 }
@@ -39,7 +39,9 @@ func retrieveAllNamespaceProcess(serviceName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	namespaces, err := retrieveAllNamespace(context.GetHelper(), service.Id)
+	rep := initRepository(context.GetHelper())
+
+	namespaces, err := rep.retrieveAllNamespace(service.Id)
 	if err != nil {
 		return nil, err
 	}

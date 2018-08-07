@@ -13,8 +13,25 @@ const createNewConfigurationsQuery = "INSERT INTO configurations(service_id, nam
 const retrieveAllNamespaceQuery = "SELECT namespace,active_version namespace FROM namespaces WHERE service_id = $1"
 const countNamespaceNameByService = "SELECT count(namespace) as count FROM namespaces WHERE service_id=$1 AND namespace=$2"
 
-func isNamespaceExist(q helper.QueryExecuter, service_id int, namespace string) (bool, error) {
-	data, err := q.DoQueryRow(countNamespaceNameByService, service_id, namespace)
+type namespaceRepositoryInterface interface {
+	isNamespaceExist(service_id int, namespace string) (bool, error)
+	createConfiguration(serviceId int, name string, configurations map[string]interface{}) error
+	createNewNamespace(namespaceStore *namespaceStore) error
+	retrieveAllNamespace(service_id int) ([]namespaceStore, error)
+}
+
+type namespaceRepository struct {
+	execer helper.QueryExecuter
+}
+
+func initRepository(execer helper.QueryExecuter) *namespaceRepository {
+	return &namespaceRepository{
+		execer: execer,
+	}
+}
+
+func (s *namespaceRepository) isNamespaceExist(service_id int, namespace string) (bool, error) {
+	data, err := s.execer.DoQueryRow(countNamespaceNameByService, service_id, namespace)
 	if err != nil {
 		return false, err
 	}
@@ -25,24 +42,24 @@ func isNamespaceExist(q helper.QueryExecuter, service_id int, namespace string) 
 
 	return count > 0, nil
 }
-func createConfiguration(q helper.QueryExecuter, serviceId int, name string, configurations map[string]interface{}) error {
+func (s *namespaceRepository) createConfiguration(serviceId int, name string, configurations map[string]interface{}) error {
 	configjson, err := json.Marshal(configurations)
 	if err != nil {
 		return err
 	}
-	_, err = q.DoQuery(createNewConfigurationsQuery, serviceId, name, configjson)
+	_, err = s.execer.DoQuery(createNewConfigurationsQuery, serviceId, name, configjson)
 	return err
 }
-func createNewNamespace(q helper.QueryExecuter, namespaceStore *namespaceStore) error {
+func (s *namespaceRepository) createNewNamespace(namespaceStore *namespaceStore) error {
 	if namespaceStore.ServiceId == 0 || namespaceStore.Namespace == "" {
 		return errors.New(fmt.Sprintf("Data not defined properly (id, namespace): %v %v", namespaceStore.ServiceId, namespaceStore.Namespace))
 	}
-	_, err := q.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace)
+	_, err := s.execer.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace)
 	return err
 }
 
-func retrieveAllNamespace(q helper.QueryExecuter, service_id int) ([]namespaceStore, error) {
-	data, err := q.DoQuery(retrieveAllNamespaceQuery, service_id)
+func (s *namespaceRepository) retrieveAllNamespace(service_id int) ([]namespaceStore, error) {
+	data, err := s.execer.DoQuery(retrieveAllNamespaceQuery, service_id)
 	if err != nil {
 		return nil, err
 	}
