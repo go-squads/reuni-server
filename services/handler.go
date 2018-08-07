@@ -11,7 +11,7 @@ import (
 )
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
-	services, err := getAllProcessor()
+	services, err := getAll(context.GetHelper())
 	if err != nil {
 		log.Println(err.Error())
 		return

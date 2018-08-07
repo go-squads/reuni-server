@@ -41,6 +41,9 @@ func findOneServiceByName(q helper.QueryExecuter, name string) (*service, error)
 		return nil, err
 	}
 	var dest service
+	if len(data) < 1 {
+		return nil, helper.NewHttpError(404, "Not Found")
+	}
 	err = helper.ParseMap(data[0], &dest)
 	if err != nil {
 		return nil, err
@@ -53,6 +56,9 @@ func getServiceToken(q helper.QueryExecuter, name string) (*serviceToken, error)
 	data, err := q.DoQuery(getServiceTokenQuery, name)
 	if err != nil {
 		return nil, err
+	}
+	if data == nil {
+		return nil, helper.NewHttpError(404, "Not Found")
 	}
 	err = helper.ParseMap(data[0], &token)
 	if err != nil {

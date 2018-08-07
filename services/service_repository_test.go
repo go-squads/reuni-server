@@ -159,6 +159,16 @@ func TestFindOneServiceByNameShouldReturnError(t *testing.T) {
 	assert.Empty(t, s)
 }
 
+func TestFindOneServiceByNameShouldReturnErrorWhenDataIsEmpty(t *testing.T) {
+	mock := &helper.QueryMockHelper{
+		Data: nil,
+		Err:  nil,
+	}
+	s, err := findOneServiceByName(mock, "Hello")
+	assert.Error(t, err)
+	assert.Empty(t, s)
+}
+
 func TestFindOneServiceByNameShouldReturnErrorIfDataNotMarshalable(t *testing.T) {
 	datum := make(map[string]interface{})
 	datum["test"] = make(chan int)
@@ -174,7 +184,7 @@ func TestFindOneServiceByNameShouldReturnErrorIfDataNotMarshalable(t *testing.T)
 func TestGetTokenShouldNotReturnError(t *testing.T) {
 	mock := &helper.QueryMockHelper{}
 	var data = make(map[string]interface{})
-	data["token"] = "asdfsdfa"
+	data["authorization_token"] = "asdfsdfa"
 	mock.Data = []map[string]interface{}{data}
 	token, err := getServiceToken(mock, "Hello")
 	assert.NoError(t, err)
@@ -184,7 +194,7 @@ func TestGetTokenShouldNotReturnError(t *testing.T) {
 func TestGetTokenShouldReturnErrorWhenThereIsNodata(t *testing.T) {
 	mock := &helper.QueryMockHelper{
 		Data: nil,
-		Err:  errors.New("Test Error"),
+		Err:  nil,
 	}
 	services, err := getServiceToken(mock, "hello")
 	assert.Empty(t, services)

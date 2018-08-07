@@ -14,7 +14,7 @@ type servicev struct {
 }
 
 type serviceToken struct {
-	Token string `json:"token"`
+	Token string `json:"authorization_token"`
 }
 
 func (s *service) IsEmpty() bool {
