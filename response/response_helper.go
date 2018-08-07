@@ -3,6 +3,9 @@ package response
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-squads/reuni-server/helper"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -19,4 +22,18 @@ func ResponseHelper(w http.ResponseWriter, http_status int, content_type string,
 func RespondWithError(w http.ResponseWriter, code int, content_type string, message string) {
 	errorMessage, _ := json.Marshal(map[string]string{"error": message})
 	ResponseHelper(w, code, content_type, string(errorMessage))
+}
+
+func ResponseError(caller, user string, w http.ResponseWriter, err error) {
+	if err == nil {
+		return
+	}
+	log.Error(err.Error())
+	if httpErr, ok := err.(*helper.HttpError); ok && httpErr.Status != http.StatusInternalServerError {
+		msg, _ := json.Marshal(httpErr)
+		http.Error(w, string(msg), httpErr.Status)
+	} else {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
 }
