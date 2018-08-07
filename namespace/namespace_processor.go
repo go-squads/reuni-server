@@ -15,7 +15,12 @@ func createNewNamespaceProcess(serviceName string, namespacev namespaceView) err
 	namespaceStore.ActiveVersion = 1
 	configurations := namespacev.Configuration
 
-	err = createNewNamespace(context.GetHelper(), namespaceStore, configurations)
+	err = createNewNamespace(context.GetHelper(), namespaceStore)
+	if err != nil {
+		return err
+	}
+	err = createConfiguration(context.GetHelper(), service.Id, namespacev.Namespace, configurations)
+
 	return err
 }
 
