@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-squads/reuni-server/services"
+
 	"github.com/go-squads/reuni-server/helper"
 )
 
@@ -18,6 +20,7 @@ type namespaceRepositoryInterface interface {
 	createConfiguration(serviceId int, name string, configurations map[string]interface{}) error
 	createNewNamespace(namespaceStore *namespaceStore) error
 	retrieveAllNamespace(service_id int) ([]namespaceStore, error)
+	getServiceId(serviceName string) int
 }
 
 type namespaceRepository struct {
@@ -69,4 +72,11 @@ func (s *namespaceRepository) retrieveAllNamespace(service_id int) ([]namespaceS
 		return nil, err
 	}
 	return namespaces, nil
+}
+func (s *namespaceRepository) getServiceId(serviceName string) (int, error) {
+	ret, err := services.FindOneServiceByName(serviceName)
+	if err != nil {
+		return 0, err
+	}
+	return ret.Id, nil
 }

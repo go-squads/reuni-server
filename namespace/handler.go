@@ -22,7 +22,7 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(namespaceData)
 
-	err = createNewNamespaceProcess(serviceName, namespaceData)
+	err = createNewNamespaceProcessor(serviceName, namespaceData)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("CreateNamespace: error writing to database", err.Error())

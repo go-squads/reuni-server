@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/helper"
 	"github.com/stretchr/testify/assert"
 )
@@ -131,5 +132,27 @@ func TestRetrieveAllNamespaceShouldReturnErrorWhenQueryReturnResultThatCannotBeP
 	res, err := rep.retrieveAllNamespace(1)
 	assert.Error(t, err)
 	assert.Nil(t, res)
+
+}
+
+func TestGetServiceIdShouldReturnId(t *testing.T) {
+	rep := initRepository(makeMockRows(makeRows(map[string]interface{}{"id": 2, "name": "test-service"}, map[string]interface{}{"namespace": "production", "active_version": 5}), nil))
+	appcontext.InitMockContext(
+		rep.execer,
+	)
+	res, err := rep.getServiceId("test-service")
+	assert.NoError(t, err)
+	assert.Equal(t, 2, res)
+
+}
+
+func TestGetServiceIdShouldReturnErrorWhenNoData(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, nil))
+	appcontext.InitMockContext(
+		rep.execer,
+	)
+	res, err := rep.getServiceId("test-service2")
+	assert.Error(t, err)
+	assert.Empty(t, res)
 
 }
