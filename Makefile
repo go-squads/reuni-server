@@ -5,7 +5,7 @@ all:
 
 dep:
 	@echo "Downloading Dependencies"
-	@dep ensure
+	@dep ensure -v
 
 test:
 	@echo "Testing the application"
