@@ -6,6 +6,7 @@ import (
 
 type QueryExecuter interface {
 	DoQuery(query string, args ...interface{}) ([]map[string]interface{}, error)
+	DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error)
 }
 
 type QueryHelper struct {
@@ -31,6 +32,15 @@ func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]i
 		return nil, err
 	}
 	data, err := parseRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (q *QueryHelper) DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error) {
+	var data map[string]interface{}
+	err := q.DB.QueryRowx(query, args...).StructScan(&data)
 	if err != nil {
 		return nil, err
 	}
