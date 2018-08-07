@@ -2,6 +2,7 @@ package namespace
 
 import (
 	"encoding/json"
+	"errors"
 
 	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/services"
@@ -15,7 +16,16 @@ func createNewNamespaceProcess(serviceName string, namespacev namespaceView) err
 	namespaceStore.ActiveVersion = 1
 	configurations := namespacev.Configuration
 
-	err = createNewNamespace(context.GetHelper(), namespaceStore)
+	isNamespaceExist, err := isNamespaceExist(context.GetHelper(), namespaceStore.ServiceId, namespaceStore.Namespace)
+	if err != nil {
+		return err
+	}
+
+	if isNamespaceExist {
+		return errors.New("Namespace already exist for the service")
+	}
+
+	err = createNewNamespace(context.GetHelper(), &namespaceStore)
 	if err != nil {
 		return err
 	}

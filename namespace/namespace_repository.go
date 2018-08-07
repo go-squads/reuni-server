@@ -3,7 +3,7 @@ package namespace
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 
 	"github.com/go-squads/reuni-server/helper"
 )
@@ -33,16 +33,11 @@ func createConfiguration(q helper.QueryExecuter, serviceId int, name string, con
 	_, err = q.DoQuery(createNewConfigurationsQuery, serviceId, name, configjson)
 	return err
 }
-func createNewNamespace(q helper.QueryExecuter, namespaceStore namespaceStore) error {
-	isNamespaceExist, err := isNamespaceExist(q, namespaceStore.ServiceId, namespaceStore.Namespace)
-	if err != nil {
-		return err
+func createNewNamespace(q helper.QueryExecuter, namespaceStore *namespaceStore) error {
+	if namespaceStore.ServiceId == 0 || namespaceStore.Namespace == "" {
+		return errors.New(fmt.Sprintf("Data not defined properly (id, namespace): %v %v", namespaceStore.ServiceId, namespaceStore.Namespace))
 	}
-
-	if isNamespaceExist {
-		return errors.New("Namespace already exist for the service")
-	}
-	_, err = q.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace)
+	_, err := q.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace)
 	return err
 }
 
@@ -51,8 +46,10 @@ func retrieveAllNamespace(q helper.QueryExecuter, service_id int) ([]namespaceSt
 	if err != nil {
 		return nil, err
 	}
-	var configurations []namespaceStore
-	log.Print(data)
-	err = helper.ParseMap(data, &configurations)
-	return configurations, nil
+	var namespaces []namespaceStore
+	err = helper.ParseMap(data, &namespaces)
+	if err != nil {
+		return nil, err
+	}
+	return namespaces, nil
 }
