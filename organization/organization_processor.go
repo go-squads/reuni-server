@@ -1,11 +1,15 @@
 package organization
 
 import (
+	"net/http"
+
 	"github.com/go-squads/reuni-server/appcontext"
+	"github.com/go-squads/reuni-server/helper"
 )
 
 type processor interface {
 	createNewOrganizationProcessor(orginizationName string, userId int64) error
+	addUserProcessor(member *Member) error
 }
 
 type mainProcessor struct{}
@@ -25,4 +29,11 @@ func (s *mainProcessor) createNewOrganizationProcessor(organizationName string, 
 		return err
 	}
 	return getRepository().addUser(id, userId, "Admin")
+}
+
+func (s *mainProcessor) addUserProcessor(member *Member) error {
+	if !member.isRoleValid() {
+		return helper.NewHttpError(http.StatusBadRequest, "Role is not valid")
+	}
+	return getRepository().addUser(member.OrgId, member.UserId, member.Role)
 }

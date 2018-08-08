@@ -52,3 +52,30 @@ func TestGetRepositoryWhenActiveRepoNil(t *testing.T) {
 	assert.NotNil(t, repo)
 
 }
+
+func TestAddUserProcessorShouldNotReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	activeRepository = mock
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "Admin",
+	}
+	mock.EXPECT().addUser(int64(1), int64(1), "Admin").Return(nil)
+	err := proc.addUserProcessor(member)
+	assert.NoError(t, err)
+}
+
+func TestAddUserProcessorShouldReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "aosdkaos",
+	}
+	err := proc.addUserProcessor(member)
+	assert.Error(t, err)
+}
