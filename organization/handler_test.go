@@ -106,3 +106,10 @@ func TestCreateOrganizationHandlerShouldReturn201(t *testing.T) {
 	ServeRequest(rr, req.WithContext(context.WithValue(req.Context(), "userId", 1)), CreateOrganizationHandler)
 	assert.Equal(t, http.StatusCreated, rr.Code)
 }
+
+func TestGetProcessorShouldInstantiateMainRepository(t *testing.T) {
+	proc = nil
+	activeProc := getProcessor()
+	_, ok := activeProc.(*mainProcessor)
+	assert.True(t, ok)
+}
