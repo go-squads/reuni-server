@@ -22,7 +22,7 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(namespaceData)
 
-	err = createNewNamespaceProcessor(serviceName, namespaceData)
+	err = createNewNamespaceProcessor(serviceName, &namespaceData)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("CreateNamespace: error writing to database", err.Error())
@@ -34,7 +34,7 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 func RetrieveAllNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var serviceName = mux.Vars(r)["service_name"]
 	log.Printf("RetrieveAllNamespaces: Get Request to %v for retrieve all data", serviceName)
-	configsjson, err := retrieveAllNamespaceProcess(serviceName)
+	configsjson, err := retrieveAllNamespaceProcessor(serviceName)
 	if err != nil {
 		log.Println("RetrieveAllNamespaces: ", err.Error())
 		return

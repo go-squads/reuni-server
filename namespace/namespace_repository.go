@@ -20,7 +20,7 @@ type namespaceRepositoryInterface interface {
 	createConfiguration(serviceId int, name string, configurations map[string]interface{}) error
 	createNewNamespace(namespaceStore *namespaceStore) error
 	retrieveAllNamespace(service_id int) ([]namespaceStore, error)
-	getServiceId(serviceName string) int
+	getServiceId(serviceName string) (int, error)
 }
 
 type namespaceRepository struct {

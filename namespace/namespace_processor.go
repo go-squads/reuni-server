@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/go-squads/reuni-server/helper"
+
 	"github.com/go-squads/reuni-server/appcontext"
-	"github.com/go-squads/reuni-server/services"
 )
 
 var activeRepo namespaceRepositoryInterface
@@ -17,16 +18,27 @@ func getActiveRepo() namespaceRepositoryInterface {
 	return activeRepo
 }
 
-func createNewNamespaceProcessor(serviceName string, namespacev namespaceView) error {
-	service, err := services.FindOneServiceByName(serviceName)
+func parseData(serviceId int, view *namespaceView, data *namespaceStore) error {
+	data.ServiceId = serviceId
+	data.Namespace = view.Namespace
+	data.ActiveVersion = 1
+	if data.Namespace == "" {
+		return helper.NewHttpError(400, "Namespace cannot be empty")
+	}
+	return nil
+}
+
+func createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) error {
+	serviceId, err := getActiveRepo().getServiceId(serviceName)
 	if err != nil {
 		return err
 	}
-	var namespaceStore = namespaceStore{}
-	namespaceStore.ServiceId = service.Id
-	namespaceStore.Namespace = namespacev.Namespace
-	namespaceStore.ActiveVersion = 1
-	configurations := namespacev.Configuration
+	var namespaceStore namespaceStore
+	err = parseData(serviceId, namespacev, &namespaceStore)
+	if err != nil {
+		return err
+	}
+
 	isNamespaceExist, err := getActiveRepo().isNamespaceExist(namespaceStore.ServiceId, namespaceStore.Namespace)
 	if err != nil {
 		return err
@@ -40,24 +52,22 @@ func createNewNamespaceProcessor(serviceName string, namespacev namespaceView) e
 	if err != nil {
 		return err
 	}
-	err = getActiveRepo().createConfiguration(service.Id, namespacev.Namespace, configurations)
+	configurations := namespacev.Configuration
+	err = getActiveRepo().createConfiguration(serviceId, namespacev.Namespace, configurations)
 
 	return err
 }
 
-func retrieveAllNamespaceProcess(serviceName string) ([]byte, error) {
-	service, err := services.FindOneServiceByName(serviceName)
+func retrieveAllNamespaceProcessor(serviceName string) ([]byte, error) {
+	serviceId, err := getActiveRepo().getServiceId(serviceName)
 	if err != nil {
 		return nil, err
 	}
 
-	namespaces, err := getActiveRepo().retrieveAllNamespace(service.Id)
+	namespaces, err := getActiveRepo().retrieveAllNamespace(serviceId)
 	if err != nil {
 		return nil, err
 	}
 	namespaceJSON, err := json.Marshal(namespaces)
-	if err != nil {
-		return nil, err
-	}
-	return namespaceJSON, nil
+	return namespaceJSON, err
 }
