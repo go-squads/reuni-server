@@ -5,9 +5,8 @@
 package organization
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // Mockrepository is a mock of repository interface
@@ -56,4 +55,16 @@ func (m *Mockrepository) addUser(organizationId, userId int64, role string) erro
 // addUser indicates an expected call of addUser
 func (mr *MockrepositoryMockRecorder) addUser(organizationId, userId, role interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "addUser", reflect.TypeOf((*Mockrepository)(nil).addUser), organizationId, userId, role)
+}
+
+// deleteUser mocks base method
+func (m *Mockrepository) deleteUser(organizationId, userId int64) error {
+	ret := m.ctrl.Call(m, "deleteUser", organizationId, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// deleteUser indicates an expected call of deleteUser
+func (mr *MockrepositoryMockRecorder) deleteUser(organizationId, userId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteUser", reflect.TypeOf((*Mockrepository)(nil).deleteUser), organizationId, userId)
 }
