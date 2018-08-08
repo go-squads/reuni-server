@@ -31,7 +31,7 @@ func TestCreateOrganizationShouldNotReturnError(t *testing.T) {
 	assert.NoError(t, err)
 }
 func TestCreateOrganizationShouldReturnErrorWhenQueryReturnError(t *testing.T) {
-	rep := initRepository(makeMockRows(nil, errors.New("Test Error")))
+	rep := initRepository(makeMockRow(nil, errors.New("Test Error")))
 	id, err := rep.createNewOrganization("test-org")
 	assert.Empty(t, id)
 	assert.Error(t, err)
@@ -45,13 +45,25 @@ func TestCreateOrganizationShouldReturnErrorWhenIdCannotBeParsed(t *testing.T) {
 }
 
 func TestAddUserShouldReturnError(t *testing.T) {
-	rep := initRepository(makeMockRow(nil, errors.New("Test Error")))
+	rep := initRepository(makeMockRows(nil, errors.New("Test Error")))
 	err := rep.addUser(int64(1), int64(1), "adsd")
 	assert.Error(t, err)
 }
 
 func TestAddUserShouldNotReturnError(t *testing.T) {
-	rep := initRepository(makeMockRow(nil, nil))
+	rep := initRepository(makeMockRows(nil, nil))
 	err := rep.addUser(int64(1), int64(1), "adsd")
+	assert.NoError(t, err)
+}
+
+func TestDeleteUserShouldReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("Test Error")))
+	err := rep.deleteUser(int64(1), int64(1))
+	assert.Error(t, err)
+}
+
+func TestDeleteUserShouldNotReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, nil))
+	err := rep.deleteUser(int64(1), int64(1))
 	assert.NoError(t, err)
 }
