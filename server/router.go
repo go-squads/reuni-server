@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/go-squads/reuni-server/configuration"
 	"github.com/go-squads/reuni-server/namespace"
+	"github.com/go-squads/reuni-server/organization"
 	"github.com/go-squads/reuni-server/services"
 	"github.com/go-squads/reuni-server/users"
 	"github.com/gorilla/mux"
@@ -23,6 +24,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/services/{service_name}/{namespace}/{version}/agent", validateAgentTokenMiddleware(configuration.GetConfigurationHandler))
 	router.HandleFunc("/services/{service_name}/{namespace}/{version}", withAuthenticator(configuration.GetConfigurationHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/{namespace}", withAuthenticator(configuration.CreateNewVersionHandler)).Methods("POST")
+	router.HandleFunc("/organization", withAuthenticator(organization.CreateOrganizationHandler)).Methods("POST")
 	router.HandleFunc("/signup", users.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/login", users.LoginUserHandler).Methods("POST")
 	return router

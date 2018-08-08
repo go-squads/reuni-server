@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -22,7 +23,10 @@ func withAuthenticator(next http.HandlerFunc) http.HandlerFunc {
 		obj, err := authenticator.VerifyUserJWToken(token, appcontext.GetKeys().PublicKey)
 		if obj != nil {
 			log.Println("User", obj, "access from", r.RemoteAddr)
-			next.ServeHTTP(w, r)
+			ctx := context.WithValue(r.Context(), "userId", obj["id"])
+			ctx = context.WithValue(ctx, "username", obj["username"])
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			log.Println("Access from", r.RemoteAddr, "not authorized")
 			log.Println(err.Error())
