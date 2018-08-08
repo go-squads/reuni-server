@@ -52,7 +52,7 @@ func TestAddUserShouldReturnError(t *testing.T) {
 
 func TestAddUserShouldNotReturnError(t *testing.T) {
 	rep := initRepository(makeMockRows(nil, nil))
-	err := rep.addUser(int64(1), int64(1), "adsd")
+	err := rep.addUser(int64(1), int64(1), "Admin")
 	assert.NoError(t, err)
 }
 
@@ -65,5 +65,17 @@ func TestDeleteUserShouldReturnError(t *testing.T) {
 func TestDeleteUserShouldNotReturnError(t *testing.T) {
 	rep := initRepository(makeMockRows(nil, nil))
 	err := rep.deleteUser(int64(1), int64(1))
+	assert.NoError(t, err)
+}
+
+func TestUpdateRoleOfUserShouldReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("Test Error")))
+	err := rep.updateRoleOfUser("dmn", int64(1), int64(1))
+	assert.Error(t, err)
+}
+
+func TestUpdateRoleOfUserShouldNotReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, nil))
+	err := rep.updateRoleOfUser("Admin", int64(1), int64(1))
 	assert.NoError(t, err)
 }

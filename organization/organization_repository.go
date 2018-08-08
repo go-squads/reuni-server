@@ -10,6 +10,7 @@ type repository interface {
 	createNewOrganization(organization_name string) (int64, error)
 	addUser(organizationId, userId int64, role string) error
 	deleteUser(organizationId, userId int64) error
+	updateRoleOfUser(newRole string, organizationId, userId int64) error
 }
 
 type mainRepository struct {
@@ -20,6 +21,7 @@ const (
 	createNewOrganizationQuery = "INSERT INTO organization(name) VALUES($1) RETURNING id"
 	addUserQuery               = "INSERT INTO organization_member(organization_id, user_id, role) VALUES ($1,$2,$3) "
 	deleteUserFromGroupQuery   = "DELETE FROM organization_member where organization_id=$1 and user_id=$2"
+	updateRoleOfUserQuery      = "UPDATE organization_member SET role=$1 WHERE organization_id=$2 and user_id=$3"
 )
 
 func initRepository(execer helper.QueryExecuter) *mainRepository {
@@ -47,5 +49,10 @@ func (s *mainRepository) addUser(organizationId, userId int64, role string) erro
 
 func (s *mainRepository) deleteUser(organizationId, userId int64) error {
 	_, err := s.execer.DoQuery(deleteUserFromGroupQuery, organizationId, userId)
+	return err
+}
+
+func (s *mainRepository) updateRoleOfUser(newRole string, organizationId, userId int64) error {
+	_, err := s.execer.DoQuery(updateRoleOfUserQuery, newRole, organizationId, userId)
 	return err
 }

@@ -68,3 +68,15 @@ func (m *Mockrepository) deleteUser(organizationId, userId int64) error {
 func (mr *MockrepositoryMockRecorder) deleteUser(organizationId, userId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteUser", reflect.TypeOf((*Mockrepository)(nil).deleteUser), organizationId, userId)
 }
+
+// updateRoleOfUser mocks base method
+func (m *Mockrepository) updateRoleOfUser(newRole string, organizationId, userId int64) error {
+	ret := m.ctrl.Call(m, "updateRoleOfUser", newRole, organizationId, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// updateRoleOfUser indicates an expected call of updateRoleOfUser
+func (mr *MockrepositoryMockRecorder) updateRoleOfUser(newRole, organizationId, userId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "updateRoleOfUser", reflect.TypeOf((*Mockrepository)(nil).updateRoleOfUser), newRole, organizationId, userId)
+}
