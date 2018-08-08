@@ -149,5 +149,7 @@ func TestGetActiveRepositoryWithMockContext(t *testing.T) {
 	})
 	activeRepo = nil
 	res := getActiveRepo()
-	assert.NotNil(t, res)
+	mock, ok := res.(*namespaceRepository)
+	assert.True(t, ok)
+	assert.NotNil(t, mock)
 }

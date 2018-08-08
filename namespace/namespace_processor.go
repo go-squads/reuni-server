@@ -13,7 +13,7 @@ var activeRepo namespaceRepositoryInterface
 
 func getActiveRepo() namespaceRepositoryInterface {
 	if activeRepo == nil {
-		initRepository(appcontext.GetHelper())
+		activeRepo = initRepository(appcontext.GetHelper())
 	}
 	return activeRepo
 }
