@@ -4,6 +4,12 @@ import (
 	"github.com/go-squads/reuni-server/appcontext"
 )
 
+type processor interface {
+	createNewOrganizationProcessor(orginizationName string, userId int64) error
+}
+
+type mainProcessor struct{}
+
 var activeRepository repository
 
 func getRepository() repository {
@@ -13,8 +19,8 @@ func getRepository() repository {
 	return activeRepository
 }
 
-func createNewOrganizationProcessor(organization_name string, userId int64) error {
-	id, err := getRepository().createNewOrganization(organization_name)
+func (s *mainProcessor) createNewOrganizationProcessor(organizationName string, userId int64) error {
+	id, err := getRepository().createNewOrganization(organizationName)
 	if err != nil {
 		return err
 	}

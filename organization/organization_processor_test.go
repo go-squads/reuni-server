@@ -12,33 +12,36 @@ import (
 )
 
 func TestCreateOrganizationProcessorShouldReturnErrorWhenCannotCreateOrgnazation(t *testing.T) {
+	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 	activeRepository = mock
 	mock.EXPECT().createNewOrganization("test").Return(int64(0), errors.New("Test Error"))
-	err := createNewOrganizationProcessor("test", int64(1))
+	err := proc.createNewOrganizationProcessor("test", int64(1))
 	assert.Error(t, err)
 
 }
 
 func TestCreateOrganizationProcessorShouldReturnErrorWhenAddUserReturnError(t *testing.T) {
+	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 	activeRepository = mock
 	mock.EXPECT().createNewOrganization("test").Return(int64(1), nil)
 	mock.EXPECT().addUser(int64(1), int64(1), "Admin").Return(errors.New("Test Error"))
-	err := createNewOrganizationProcessor("test", int64(1))
+	err := proc.createNewOrganizationProcessor("test", int64(1))
 	assert.Error(t, err)
 
 }
 
 func TestCreateOrganizationProcessorShouldNotReturnError(t *testing.T) {
+	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 	activeRepository = mock
 	mock.EXPECT().createNewOrganization("test").Return(int64(1), nil)
 	mock.EXPECT().addUser(int64(1), int64(1), "Admin").Return(nil)
-	err := createNewOrganizationProcessor("test", int64(1))
+	err := proc.createNewOrganizationProcessor("test", int64(1))
 	assert.NoError(t, err)
 }
 
