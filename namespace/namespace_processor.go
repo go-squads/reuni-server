@@ -38,7 +38,6 @@ func createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) 
 	if err != nil {
 		return err
 	}
-
 	isNamespaceExist, err := getActiveRepo().isNamespaceExist(namespaceStore.ServiceId, namespaceStore.Namespace)
 	if err != nil {
 		return err
@@ -47,14 +46,12 @@ func createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) 
 	if isNamespaceExist {
 		return errors.New("Namespace already exist for the service")
 	}
-
 	err = getActiveRepo().createNewNamespace(&namespaceStore)
 	if err != nil {
 		return err
 	}
 	configurations := namespacev.Configuration
 	err = getActiveRepo().createConfiguration(serviceId, namespacev.Namespace, configurations)
-
 	return err
 }
 

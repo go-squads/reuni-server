@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/go-squads/reuni-server/services"
 
@@ -36,12 +38,18 @@ func initRepository(execer helper.QueryExecuter) *namespaceRepository {
 func (s *namespaceRepository) isNamespaceExist(service_id int, namespace string) (bool, error) {
 	data, err := s.execer.DoQueryRow(countNamespaceNameByService, service_id, namespace)
 	if err != nil {
+		log.Println("xx" + err.Error())
 		return false, err
 	}
-	count, ok := data["count"].(int)
+
+	log.Println(data)
+	log.Println(reflect.TypeOf(data["count"]))
+	count, ok := data["count"].(int64)
 	if !ok {
+
 		return false, errors.New("Query should result int")
 	}
+	log.Println(count)
 
 	return count > 0, nil
 }

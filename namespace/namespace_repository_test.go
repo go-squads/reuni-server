@@ -26,14 +26,14 @@ func makeRows(args ...map[string]interface{}) []map[string]interface{} {
 }
 
 func TestIsNamespaceExistReturnTrue(t *testing.T) {
-	rep := initRepository(makeMockRow(map[string]interface{}{"count": 50}, nil))
+	rep := initRepository(makeMockRow(map[string]interface{}{"count": int64(50)}, nil))
 	res, err := rep.isNamespaceExist(1, "namespace")
 	assert.True(t, res)
 	assert.NoError(t, err)
 }
 
 func TestIsNamespaceExistReturnFalse(t *testing.T) {
-	rep := initRepository(makeMockRow(map[string]interface{}{"count": 0}, nil))
+	rep := initRepository(makeMockRow(map[string]interface{}{"count": int64(0)}, nil))
 	res, err := rep.isNamespaceExist(1, "namespace")
 	assert.False(t, res)
 	assert.NoError(t, err)

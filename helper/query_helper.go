@@ -39,8 +39,8 @@ func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]i
 }
 
 func (q *QueryHelper) DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error) {
-	var data map[string]interface{}
-	err := q.DB.QueryRowx(query, args...).StructScan(&data)
+	data := make(map[string]interface{})
+	err := q.DB.QueryRowx(query, args...).MapScan(data)
 	if err != nil {
 		return nil, err
 	}
