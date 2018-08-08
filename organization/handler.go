@@ -104,3 +104,29 @@ func DeleteUserFromGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
 }
+
+func UpdateRoleOfUserHandler(w http.ResponseWriter, r *http.Request) {
+	var member Member
+	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	if err != nil {
+		response.ResponseError("AddUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+	log.Printf("UpdateRoleOfUser: Get Request to update user %d role to: %s", orgID, member.Role)
+	err = json.NewDecoder(r.Body).Decode(&member)
+	defer r.Body.Close()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("UpdateRoleOfUser: error parsing body")
+		return
+	}
+	member.OrgId = orgID
+	err = getProcessor().updateRoleOfUserProcessor(&member)
+	if err != nil {
+		response.ResponseError("UpdateRoleOfUser", getFromContext(r, "username"), w, err)
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
+
+}

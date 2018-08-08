@@ -67,3 +67,15 @@ func (m *Mockprocessor) deleteUserFromGroupProcessor(organizationId, userId int6
 func (mr *MockprocessorMockRecorder) deleteUserFromGroupProcessor(organizationId, userId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteUserFromGroupProcessor", reflect.TypeOf((*Mockprocessor)(nil).deleteUserFromGroupProcessor), organizationId, userId)
 }
+
+// updateRoleOfUserProcessor mocks base method
+func (m *Mockprocessor) updateRoleOfUserProcessor(member *Member) error {
+	ret := m.ctrl.Call(m, "updateRoleOfUserProcessor", member)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// updateRoleOfUserProcessor indicates an expected call of updateRoleOfUserProcessor
+func (mr *MockprocessorMockRecorder) updateRoleOfUserProcessor(member interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "updateRoleOfUserProcessor", reflect.TypeOf((*Mockprocessor)(nil).updateRoleOfUserProcessor), member)
+}

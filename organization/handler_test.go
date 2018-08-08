@@ -276,3 +276,88 @@ func TestDeleteUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
+
+func TestUpdateRoleOfUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
+	payload := `
+		{
+			"user_id": 1,
+			"role": "Admin"
+		}
+	`
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/organization/error/member", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestUpdateRoleOfUserShouldReturn500WhenBodyCantBeParsed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			adasdas
+		}
+	`
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "Developer",
+	}
+	mock.EXPECT().updateRoleOfUserProcessor(member).Return(errors.New("Internal error"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestUpdateRoleOfUserShouldReturnErrorWhenDataIsNotValid(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"user_id": 1,
+			"role": "Auditor"
+		}
+	`
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "Auditor",
+	}
+	mock.EXPECT().updateRoleOfUserProcessor(member).Return(errors.New("Internal error"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+func TestUpdateRoleOfUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"user_id": 1,
+			"role": "Auditor"
+		}
+	`
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "Auditor",
+	}
+	mock.EXPECT().updateRoleOfUserProcessor(member).Return(nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+}

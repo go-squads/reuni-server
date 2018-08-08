@@ -11,6 +11,7 @@ type processor interface {
 	createNewOrganizationProcessor(orginizationName string, userId int64) error
 	addUserProcessor(member *Member) error
 	deleteUserFromGroupProcessor(organizationId, userId int64) error
+	updateRoleOfUserProcessor(member *Member) error
 }
 
 type mainProcessor struct{}
@@ -41,4 +42,11 @@ func (s *mainProcessor) addUserProcessor(member *Member) error {
 
 func (s *mainProcessor) deleteUserFromGroupProcessor(organizationId, userId int64) error {
 	return getRepository().deleteUser(organizationId, userId)
+}
+
+func (s *mainProcessor) updateRoleOfUserProcessor(member *Member) error {
+	if !member.isRoleValid() {
+		return helper.NewHttpError(http.StatusBadRequest, "New role is not valid")
+	}
+	return getRepository().updateRoleOfUser(member.Role, member.OrgId, member.UserId)
 }

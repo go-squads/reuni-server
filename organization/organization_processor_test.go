@@ -102,3 +102,30 @@ func TestDeleteUserProcessorShouldReturnError(t *testing.T) {
 	err := proc.addUserProcessor(member)
 	assert.Error(t, err)
 }
+
+func TestUpdateRoleOfUserProcessorShouldNotReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	activeRepository = mock
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "Developer",
+	}
+	mock.EXPECT().updateRoleOfUser("Developer", int64(1), int64(1)).Return(nil)
+	err := proc.updateRoleOfUserProcessor(member)
+	assert.NoError(t, err)
+}
+
+func TestUpdateRoleOfUserProcessorShouldReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "aosdkaos",
+	}
+	err := proc.updateRoleOfUserProcessor(member)
+	assert.Error(t, err)
+}
