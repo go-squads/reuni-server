@@ -55,3 +55,15 @@ func (m *Mockprocessor) addUserProcessor(member *Member) error {
 func (mr *MockprocessorMockRecorder) addUserProcessor(member interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "addUserProcessor", reflect.TypeOf((*Mockprocessor)(nil).addUserProcessor), member)
 }
+
+// deleteUserFromGroupProcessor mocks base method
+func (m *Mockprocessor) deleteUserFromGroupProcessor(organizationId, userId int64) error {
+	ret := m.ctrl.Call(m, "deleteUserFromGroupProcessor", organizationId, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// deleteUserFromGroupProcessor indicates an expected call of deleteUserFromGroupProcessor
+func (mr *MockprocessorMockRecorder) deleteUserFromGroupProcessor(organizationId, userId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteUserFromGroupProcessor", reflect.TypeOf((*Mockprocessor)(nil).deleteUserFromGroupProcessor), organizationId, userId)
+}

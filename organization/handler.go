@@ -79,3 +79,28 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
 }
+
+func DeleteUserFromGroupHandler(w http.ResponseWriter, r *http.Request) {
+	var member Member
+	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	fmt.Println("ORG ID: " + fmt.Sprint(orgID))
+	if err != nil {
+		response.ResponseError("DeleteUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+	log.Printf("DeleteUser: Get Request to add user to org: %d", orgID)
+	err = json.NewDecoder(r.Body).Decode(&member)
+	defer r.Body.Close()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("DeleteUser: error parsing body")
+		return
+	}
+	err = getProcessor().deleteUserFromGroupProcessor(orgID, member.UserId)
+	if err != nil {
+		response.ResponseError("DeleteUser", getFromContext(r, "username"), w, err)
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
+}

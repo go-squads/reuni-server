@@ -10,6 +10,7 @@ import (
 type processor interface {
 	createNewOrganizationProcessor(orginizationName string, userId int64) error
 	addUserProcessor(member *Member) error
+	deleteUserFromGroupProcessor(organizationId, userId int64) error
 }
 
 type mainProcessor struct{}
@@ -36,4 +37,8 @@ func (s *mainProcessor) addUserProcessor(member *Member) error {
 		return helper.NewHttpError(http.StatusBadRequest, "Role is not valid")
 	}
 	return getRepository().addUser(member.OrgId, member.UserId, member.Role)
+}
+
+func (s *mainProcessor) deleteUserFromGroupProcessor(organizationId, userId int64) error {
+	return getRepository().deleteUser(organizationId, userId)
 }
