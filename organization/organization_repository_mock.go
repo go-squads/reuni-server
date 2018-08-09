@@ -5,8 +5,9 @@
 package organization
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // Mockrepository is a mock of repository interface
@@ -79,4 +80,17 @@ func (m *Mockrepository) updateRoleOfUser(newRole string, organizationId, userId
 // updateRoleOfUser indicates an expected call of updateRoleOfUser
 func (mr *MockrepositoryMockRecorder) updateRoleOfUser(newRole, organizationId, userId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "updateRoleOfUser", reflect.TypeOf((*Mockrepository)(nil).updateRoleOfUser), newRole, organizationId, userId)
+}
+
+// getAllMemberOfOrganization mocks base method
+func (m *Mockrepository) getAllMemberOfOrganization(organizationId int64) ([]map[string]interface{}, error) {
+	ret := m.ctrl.Call(m, "getAllMemberOfOrganization", organizationId)
+	ret0, _ := ret[0].([]map[string]interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllMemberOfOrganization indicates an expected call of getAllMemberOfOrganization
+func (mr *MockrepositoryMockRecorder) getAllMemberOfOrganization(organizationId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllMemberOfOrganization", reflect.TypeOf((*Mockrepository)(nil).getAllMemberOfOrganization), organizationId)
 }

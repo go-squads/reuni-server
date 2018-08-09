@@ -361,3 +361,17 @@ func TestUpdateRoleOfUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
+
+// func TestGetAllMembers(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
+// 	mock := NewMockprocessor(ctrl)
+// 	proc = mock
+
+// 	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
+// 	var rr = httptest.NewRecorder()
+// 	req, _ := http.NewRequest("GET", "/organization/1/member", strings.NewReader(""))
+// 	r := mux.NewRouter()
+// 	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+// 	r.ServeHTTP(rr, req)
+// 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+// }

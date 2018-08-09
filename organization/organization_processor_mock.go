@@ -79,3 +79,16 @@ func (m *Mockprocessor) updateRoleOfUserProcessor(member *Member) error {
 func (mr *MockprocessorMockRecorder) updateRoleOfUserProcessor(member interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "updateRoleOfUserProcessor", reflect.TypeOf((*Mockprocessor)(nil).updateRoleOfUserProcessor), member)
 }
+
+// getAllMemberOfOrganizationProcessor mocks base method
+func (m *Mockprocessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error) {
+	ret := m.ctrl.Call(m, "getAllMemberOfOrganizationProcessor", organizationId)
+	ret0, _ := ret[0].([]map[string]interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllMemberOfOrganizationProcessor indicates an expected call of getAllMemberOfOrganizationProcessor
+func (mr *MockprocessorMockRecorder) getAllMemberOfOrganizationProcessor(organizationId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllMemberOfOrganizationProcessor", reflect.TypeOf((*Mockprocessor)(nil).getAllMemberOfOrganizationProcessor), organizationId)
+}

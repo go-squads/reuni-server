@@ -130,3 +130,19 @@ func UpdateRoleOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
 
 }
+
+func GetAllMemberOfOrganizationHandler(w http.ResponseWriter, r *http.Request) {
+	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	if err != nil {
+		response.ResponseError("GetAllMemberOfOrganization", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
+		return
+	}
+	fmt.Println("GETALLMEMBER of orgID: " + fmt.Sprint(orgID))
+	members, err := getProcessor().getAllMemberOfOrganizationProcessor(orgID)
+	fmt.Println(fmt.Sprint(members))
+	if err != nil {
+		response.ResponseError("GetAllMemberOfOrganization", getFromContext(r, "username"), w, err)
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprint(members))
+}
