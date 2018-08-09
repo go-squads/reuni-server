@@ -5,20 +5,19 @@ import (
 	"errors"
 
 	"github.com/go-squads/reuni-server/helper"
-
-	"github.com/go-squads/reuni-server/appcontext"
 )
 
-var activeRepo namespaceRepositoryInterface
-
-func getActiveRepo() namespaceRepositoryInterface {
-	if activeRepo == nil {
-		activeRepo = initRepository(appcontext.GetHelper())
-	}
-	return activeRepo
+type processor interface {
+	parseData(serviceId int, view *namespaceView, data *namespaceStore) error
+	createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) error
+	retrieveAllNamespaceProcessor(serviceName string) ([]byte, error)
 }
 
-func parseData(serviceId int, view *namespaceView, data *namespaceStore) error {
+type mainProcessor struct {
+	repo namespaceRepositoryInterface
+}
+
+func (s *mainProcessor) parseData(serviceId int, view *namespaceView, data *namespaceStore) error {
 	data.ServiceId = serviceId
 	data.Namespace = view.Namespace
 	data.ActiveVersion = 1
@@ -28,17 +27,17 @@ func parseData(serviceId int, view *namespaceView, data *namespaceStore) error {
 	return nil
 }
 
-func createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) error {
-	serviceId, err := getActiveRepo().getServiceId(serviceName)
+func (s *mainProcessor) createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) error {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return err
 	}
 	var namespaceStore namespaceStore
-	err = parseData(serviceId, namespacev, &namespaceStore)
+	err = s.parseData(serviceId, namespacev, &namespaceStore)
 	if err != nil {
 		return err
 	}
-	isNamespaceExist, err := getActiveRepo().isNamespaceExist(namespaceStore.ServiceId, namespaceStore.Namespace)
+	isNamespaceExist, err := s.repo.isNamespaceExist(namespaceStore.ServiceId, namespaceStore.Namespace)
 	if err != nil {
 		return err
 	}
@@ -46,24 +45,27 @@ func createNewNamespaceProcessor(serviceName string, namespacev *namespaceView) 
 	if isNamespaceExist {
 		return errors.New("Namespace already exist for the service")
 	}
-	err = getActiveRepo().createNewNamespace(&namespaceStore)
+	err = s.repo.createNewNamespace(&namespaceStore)
 	if err != nil {
 		return err
 	}
 	configurations := namespacev.Configuration
-	err = getActiveRepo().createConfiguration(serviceId, namespacev.Namespace, configurations)
+	err = s.repo.createConfiguration(serviceId, namespacev.Namespace, configurations)
 	return err
 }
 
-func retrieveAllNamespaceProcessor(serviceName string) ([]byte, error) {
-	serviceId, err := getActiveRepo().getServiceId(serviceName)
+func (s *mainProcessor) retrieveAllNamespaceProcessor(serviceName string) ([]byte, error) {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return nil, err
 	}
 
-	namespaces, err := getActiveRepo().retrieveAllNamespace(serviceId)
+	namespaces, err := s.repo.retrieveAllNamespace(serviceId)
 	if err != nil {
 		return nil, err
+	}
+	if namespaces == nil {
+		return []byte("[]"), nil
 	}
 	namespaceJSON, err := json.Marshal(namespaces)
 	return namespaceJSON, err

@@ -2,30 +2,45 @@ package namespace
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
+
+	"github.com/go-squads/reuni-server/appcontext"
+
+	"github.com/go-squads/reuni-server/helper"
 
 	"github.com/go-squads/reuni-server/response"
 	"github.com/gorilla/mux"
 )
 
-func CreateNamespace(w http.ResponseWriter, r *http.Request) {
+var proc processor
+
+func getProcessor() processor {
+	if proc == nil {
+		proc = &mainProcessor{repo: initRepository(appcontext.GetHelper())}
+	}
+	return proc
+}
+
+func getFromContext(r *http.Request, key string) string {
+	data := r.Context().Value(key)
+	if data == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", data)
+}
+
+func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var namespaceData namespaceView
 	var serviceName = mux.Vars(r)["service_name"]
-	log.Printf("CreateNamespace: Get Request to %v", serviceName)
 	err := json.NewDecoder(r.Body).Decode(&namespaceData)
-	defer r.Body.Close()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("CreateNamespace: error parsing body")
+		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
-	log.Println(namespaceData)
-
-	err = createNewNamespaceProcessor(serviceName, &namespaceData)
+	err = getProcessor().createNewNamespaceProcessor(serviceName, &namespaceData)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("CreateNamespace: error writing to database", err.Error())
+		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, err)
 		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
@@ -33,12 +48,10 @@ func CreateNamespace(w http.ResponseWriter, r *http.Request) {
 
 func RetrieveAllNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var serviceName = mux.Vars(r)["service_name"]
-	log.Printf("RetrieveAllNamespaces: Get Request to %v for retrieve all data", serviceName)
-	configsjson, err := retrieveAllNamespaceProcessor(serviceName)
+	configsjson, err := getProcessor().retrieveAllNamespaceProcessor(serviceName)
 	if err != nil {
-		log.Println("RetrieveAllNamespaces: ", err.Error())
+		response.ResponseError("RetrieveAllNamespace", getFromContext(r, "username"), w, err)
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(configsjson))
-
 }
