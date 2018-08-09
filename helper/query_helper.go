@@ -8,6 +8,7 @@ import (
 type QueryExecuter interface {
 	DoQuery(query string, args ...interface{}) ([]map[string]interface{}, error)
 	DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error)
+	DoQuerySlice(query string, args ...interface{}) ([]interface{}, error)
 }
 
 type QueryHelper struct {
@@ -43,9 +44,28 @@ func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]i
 func (q *QueryHelper) DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error) {
 	data := make(map[string]interface{})
 	err := q.DB.QueryRowx(query, args...).MapScan(data)
-	log.Println("Query %v %v return %v", query, args, data)
+	log.Printf("Query %v %v return %v", query, args, data)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
+}
+
+func (q *QueryHelper) DoQuerySlice(query string, args ...interface{}) ([]interface{}, error) {
+	rows, err := q.DB.Queryx(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	res := []interface{}{}
+	for rows.Next() {
+		var ret interface{}
+		err := rows.Scan(&ret)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, ret)
+
+	}
+	log.Printf("Query Ret: %v", res)
+	return res, err
 }

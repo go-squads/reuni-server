@@ -3,7 +3,6 @@ package configuration
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/services"
@@ -85,16 +84,15 @@ func (s *mainRepository) updateNamespaceActiveVersion(serviceId int, namespace s
 }
 
 func (s *mainRepository) getVersions(serviceId int, namespace string) ([]int, error) {
-	data, err := s.execer.DoQuery(getVersionsQuery, serviceId, namespace)
-	if err != nil {
-		return nil, err
-	}
+	data, err := s.execer.DoQuerySlice(getVersionsQuery, serviceId, namespace)
 	if err != nil {
 		return nil, err
 	}
 	var versions []int
-	log.Print(data)
 	err = helper.ParseMap(data, &versions)
+	if err != nil {
+		return nil, err
+	}
 	return versions, nil
 }
 
