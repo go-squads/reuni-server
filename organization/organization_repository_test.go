@@ -79,3 +79,17 @@ func TestUpdateRoleOfUserShouldNotReturnError(t *testing.T) {
 	err := rep.updateRoleOfUser("Admin", int64(1), int64(1))
 	assert.NoError(t, err)
 }
+
+func TestGetAllMemberOfOrganizationShouldNotReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows([]map[string]interface{}{}, nil))
+	data, err := rep.getAllMemberOfOrganization(int64(1))
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestGetAllMemberOfOrganizationShouldReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("Internal error")))
+	data, err := rep.getAllMemberOfOrganization(int64(1))
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}

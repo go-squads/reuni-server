@@ -129,3 +129,27 @@ func TestUpdateRoleOfUserProcessorShouldReturnError(t *testing.T) {
 	err := proc.updateRoleOfUserProcessor(member)
 	assert.Error(t, err)
 }
+
+func TestGetAllMemberOfOrganizationProcessorShouldNotReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	activeRepository = mock
+	mock.EXPECT().getAllMemberOfOrganization(int64(1)).Return([]map[string]interface{}{}, nil)
+	data, err := proc.getAllMemberOfOrganizationProcessor(int64(1))
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestGetAllMemberOfOrganizationProcessorShouldReturnError(t *testing.T) {
+	proc := mainProcessor{}
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	activeRepository = mock
+	mock.EXPECT().getAllMemberOfOrganization(int64(1)).Return(nil, errors.New("Internal error"))
+	data, err := proc.getAllMemberOfOrganizationProcessor(int64(1))
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}

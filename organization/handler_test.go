@@ -362,16 +362,44 @@ func TestUpdateRoleOfUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
-// func TestGetAllMembers(t *testing.T) {
-// 	ctrl := gomock.NewController(t)
-// 	mock := NewMockprocessor(ctrl)
-// 	proc = mock
+func TestGetAllMemberOfOrganizationShouldReturn500Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
 
-// 	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
-// 	var rr = httptest.NewRecorder()
-// 	req, _ := http.NewRequest("GET", "/organization/1/member", strings.NewReader(""))
-// 	r := mux.NewRouter()
-// 	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
-// 	r.ServeHTTP(rr, req)
-// 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-// }
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization/error500/member", strings.NewReader(""))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestGetAllMemberOfOrganizationShouldReturnErrorWhenOrgIdIsNotValid(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(10)).Return(nil, errors.New("Internal error"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization/10/member", strings.NewReader(""))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestGetAllMemberOfOrganizationShouldReturn200OK(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization/1/member", strings.NewReader(""))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
