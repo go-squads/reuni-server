@@ -1,64 +1,70 @@
 package configuration
 
-import (
-	"encoding/json"
+import "encoding/json"
 
-	context "github.com/go-squads/reuni-server/appcontext"
-	"github.com/go-squads/reuni-server/services"
-)
+type Processor interface {
+	getConfigurationProcess(serviceName, namespace string, version int) (*configView, error)
+	getLatestVersionProcess(serviceName, namespace string) (int, error)
+	createNewVersionProcess(serviceName, namespace string, config configView) error
+	getConfigurationVersionsProcess(serviceName, namespace string) (string, error)
+}
 
-func getConfigurationProcess(serviceName, namespace string, version int) (*configView, error) {
-	service, err := services.FindOneServiceByName(serviceName)
+type mainProcessor struct {
+	repo Repository
+}
+
+func (s *mainProcessor) getConfigurationProcess(serviceName, namespace string, version int) (*configView, error) {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return nil, err
 	}
-	config, err := getConfiguration(context.GetHelper(), service.Id, namespace, version)
+	config, err := s.repo.getConfiguration(serviceId, namespace, version)
 	if err != nil {
 		return nil, err
 	}
 	return config, nil
 }
 
-func getLatestVersionProcess(serviceName, namespace string) (int, error) {
-	service, err := services.FindOneServiceByName(serviceName)
+func (s *mainProcessor) getLatestVersionProcess(serviceName, namespace string) (int, error) {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return 0, err
 	}
-	version, err := getLatestVersionForNamespace(context.GetHelper(), service.Id, namespace)
+	version, err := s.repo.getLatestVersionForNamespace(serviceId, namespace)
 	if err != nil {
 		return 0, err
 	}
 	return version, nil
 }
 
-func createNewVersionProcess(serviceName, namespace string, config configView) error {
-	service, err := services.FindOneServiceByName(serviceName)
+func (s *mainProcessor) createNewVersionProcess(serviceName, namespace string, config configView) error {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return err
 	}
-	latestVersion, err := getLatestVersionForNamespace(context.GetHelper(), service.Id, namespace)
+	latestVersion, err := s.repo.getLatestVersionForNamespace(serviceId, namespace)
 	if err != nil {
 		return err
 	}
 
-	err = createNewVersion(context.GetHelper(), service.Id, namespace, config, latestVersion+1)
+	err = s.repo.createNewVersion(serviceId, namespace, config, latestVersion+1)
 	if err != nil {
 		return err
 	}
-	err = updateNamespaceActiveVersion(context.GetHelper(), service.Id, namespace, latestVersion+1)
+	err = s.repo.updateNamespaceActiveVersion(serviceId, namespace, latestVersion+1)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func getConfigurationVersionsProcess(serviceName, namespace string) (string, error) {
-	service, err := services.FindOneServiceByName(serviceName)
+func (s *mainProcessor) getConfigurationVersionsProcess(serviceName, namespace string) (string, error) {
+	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
 		return "", err
 	}
 
-	versions, err := getVersions(context.GetHelper(), service.Id, namespace)
+	versions, err := s.repo.getVersions(serviceId, namespace)
 	versionsv := versionsView{
 		Versions: versions,
 	}

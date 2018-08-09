@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/configuration"
 	"github.com/go-squads/reuni-server/namespace"
 	"github.com/go-squads/reuni-server/organization"
@@ -10,6 +11,7 @@ import (
 )
 
 func CreateRouter() *mux.Router {
+	configuration := configuration.New(appcontext.GetHelper())
 	router := mux.NewRouter()
 	router.HandleFunc("/services", withAuthenticator(services.GetAllServicesHandler)).Methods("GET")
 	router.HandleFunc("/services", withAuthenticator(services.CreateServiceHandler)).Methods("POST")

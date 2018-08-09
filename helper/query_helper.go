@@ -33,7 +33,7 @@ func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]i
 		return nil, err
 	}
 	data, err := parseRows(rows)
-	log.Debug("Query %v %v return %v", query, args, data)
+	log.Println("Query %v %v return %v", query, args, data)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (q *QueryHelper) DoQuery(query string, args ...interface{}) ([]map[string]i
 func (q *QueryHelper) DoQueryRow(query string, args ...interface{}) (map[string]interface{}, error) {
 	data := make(map[string]interface{})
 	err := q.DB.QueryRowx(query, args...).MapScan(data)
-	log.Debug("Query %v %v return %v", query, args, data)
+	log.Println("Query %v %v return %v", query, args, data)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ func ParseMap(data interface{}, dest interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Debug("Unmarshaling %v", string(jsonData))
+	log.Println("Unmarshaling %v", string(jsonData))
 	err = json.Unmarshal(jsonData, dest)
 	if err != nil {
 		return err
