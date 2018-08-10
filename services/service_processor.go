@@ -8,9 +8,10 @@ import (
 	"github.com/go-squads/reuni-server/helper"
 )
 
-func createServiceProcessor(servicedata servicev) error {
+func createServiceProcessor(servicedata servicev, organizationId int) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
+	serviceStore.OrganizationId = organizationId
 	if serviceStore.Name == "" {
 		return helper.NewHttpError(400, "Service name not defined")
 	}

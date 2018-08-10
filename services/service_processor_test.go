@@ -30,7 +30,7 @@ func TestCreateServiceProcessorShouldNotReturnError(t *testing.T) {
 	}
 	context.InitMockContext(q)
 	serv := servicev{Name: "Hello-World"}
-	err := createServiceProcessor(serv)
+	err := createServiceProcessor(serv, 1)
 	assert.NoError(t, err)
 }
 
@@ -41,7 +41,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenRepositoryReturnError(t *tes
 	}
 	context.InitMockContext(q)
 	serv := servicev{Name: "Hello-World"}
-	err := createServiceProcessor(serv)
+	err := createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 }
 
@@ -53,7 +53,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testin
 	}
 	context.InitMockContext(q)
 	serv := servicev{}
-	err := createServiceProcessor(serv)
+	err := createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 	httpErr, ok := err.(*helper.HttpError)
 	assert.True(t, ok)
@@ -68,7 +68,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsDuplicate(t *te
 	}
 	context.InitMockContext(q)
 	serv := servicev{Name: "Hello World"}
-	err := createServiceProcessor(serv)
+	err := createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 	httpErr, ok := err.(*helper.HttpError)
 	assert.True(t, ok)

@@ -7,6 +7,7 @@ type service struct {
 	Name               string     `json:"name"`
 	AuthorizationToken string     `json:"authorization_token"`
 	CreatedAt          *time.Time `json:"created_at"`
+	OrganizationId     int        `json:"organization_id"`
 }
 
 type servicev struct {

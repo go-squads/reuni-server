@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-squads/reuni-server/appcontext"
+
 	"github.com/go-squads/reuni-server/helper"
 
 	context "github.com/go-squads/reuni-server/appcontext"
@@ -42,7 +44,13 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	err = createServiceProcessor(servicedata)
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := translateNameToIdRepository(appcontext.GetHelper(), organizationName)
+	if err != nil {
+		response.ResponseError("CreateService", getUsername(r), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
+	err = createServiceProcessor(servicedata, organizationId)
 	if err != nil {
 		response.ResponseError("CreateService", getUsername(r), w, err)
 		return

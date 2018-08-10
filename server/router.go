@@ -13,9 +13,9 @@ import (
 func CreateRouter() *mux.Router {
 	configuration := configuration.New(appcontext.GetHelper())
 	router := mux.NewRouter()
-	router.HandleFunc("/services", withAuthenticator(services.GetAllServicesHandler)).Methods("GET")
-	router.HandleFunc("/services", withAuthenticator(services.CreateServiceHandler)).Methods("POST")
-	router.HandleFunc("/services", withAuthenticator(services.DeleteServiceHandler)).Methods("DELETE")
+	router.HandleFunc("/{organization_name}/services", withAuthenticator(services.GetAllServicesHandler)).Methods("GET")
+	router.HandleFunc("/{organization_name}/services", withAuthenticator(services.CreateServiceHandler)).Methods("POST")
+	router.HandleFunc("/{organization_name}/services", withAuthenticator(services.DeleteServiceHandler)).Methods("DELETE")
 	router.HandleFunc("/services/{service_name}/namespaces", withAuthenticator(namespace.RetrieveAllNamespaceHandler)).Methods("GET")
 	router.HandleFunc("/services/{service_name}/namespaces", withAuthenticator(namespace.CreateNamespaceHandler)).Methods("POST")
 	router.HandleFunc("/services/{service_name}/validatetoken", services.ValidateToken).Methods("GET")

@@ -6,10 +6,11 @@ import (
 
 const (
 	getAllServicesQuery       = "SELECT id,name,created_at FROM services"
-	createServiceQuery        = "INSERT INTO services(name,authorization_token) VALUES ($1,$2)"
+	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token) VALUES ($1,$2,$3)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
 	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
 	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
+	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
 
 func getAll(q helper.QueryExecuter) ([]service, error) {
@@ -26,7 +27,7 @@ func getAll(q helper.QueryExecuter) ([]service, error) {
 }
 
 func createService(q helper.QueryExecuter, servicestore service) error {
-	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.AuthorizationToken)
+	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken)
 	return err
 }
 
@@ -65,4 +66,13 @@ func getServiceToken(q helper.QueryExecuter, name string) (*serviceToken, error)
 		return nil, err
 	}
 	return &token, nil
+}
+
+func translateNameToIdRepository(q helper.QueryExecuter, organizationName string) (int, error) {
+	data, err := q.DoQueryRow(translateNameToIdQuery, organizationName)
+	if err != nil {
+		return 0, err
+	}
+	id := int(data["id"].(int64))
+	return id, nil
 }
