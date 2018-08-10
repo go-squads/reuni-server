@@ -146,3 +146,17 @@ func GetAllMemberOfOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprint(members))
 }
+
+func GetAllHandler(w http.ResponseWriter, r *http.Request) {
+	uid, err := strconv.ParseInt(getFromContext(r, "userId"), 10, 64)
+	if err != nil {
+		response.ResponseError("GetAllHandler", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Cannot get User ID"))
+		return
+	}
+	orgs, err := getProcessor().getAllOrganizationProcessor(int(uid))
+	if err != nil {
+		response.ResponseError("GetAllHandler", getFromContext(r, "username"), w, err)
+		return
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, orgs)
+}

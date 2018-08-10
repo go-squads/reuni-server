@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/appcontext"
@@ -13,6 +14,7 @@ type processor interface {
 	deleteUserFromGroupProcessor(organizationId, userId int64) error
 	updateRoleOfUserProcessor(member *Member) error
 	getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error)
+	getAllOrganizationProcessor(userId int) (string, error)
 }
 
 type mainProcessor struct{}
@@ -54,4 +56,16 @@ func (s *mainProcessor) updateRoleOfUserProcessor(member *Member) error {
 
 func (s *mainProcessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error) {
 	return getRepository().getAllMemberOfOrganization(organizationId)
+}
+
+func (s *mainProcessor) getAllOrganizationProcessor(userId int) (string, error) {
+	res, err := getRepository().getAllOrganization(userId)
+	if err != nil {
+		return "", err
+	}
+	resJSON, err := json.Marshal(res)
+	if err != nil {
+		return "", err
+	}
+	return string(resJSON), nil
 }

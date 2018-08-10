@@ -12,6 +12,7 @@ type repository interface {
 	deleteUser(organizationId, userId int64) error
 	updateRoleOfUser(newRole string, organizationId, userId int64) error
 	getAllMemberOfOrganization(organizationId int64) ([]map[string]interface{}, error)
+	getAllOrganization(userId int) ([]OrganizationMember, error)
 }
 
 type mainRepository struct {
@@ -24,6 +25,7 @@ const (
 	deleteUserFromGroupQuery        = "DELETE FROM organization_member where organization_id=$1 and user_id=$2"
 	updateRoleOfUserQuery           = "UPDATE organization_member SET role=$1 WHERE organization_id=$2 and user_id=$3"
 	getAllMemberOfOrganizationQuery = "SELECT U.username, OM.role, OM.created_at FROM organization_member OM, users U WHERE OM.user_id = U.id AND OM.organization_id=$1"
+	getAllOrganizationQuery         = "SELECT O.id,O.name,OM.role FROM organization O, organization_member OM WHERE O.id=OM.organization_id AND OM.user_id = $1"
 )
 
 func initRepository(execer helper.QueryExecuter) *mainRepository {
@@ -65,4 +67,17 @@ func (s *mainRepository) getAllMemberOfOrganization(organizationId int64) ([]map
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *mainRepository) getAllOrganization(userId int) ([]OrganizationMember, error) {
+	data, err := s.execer.DoQuery(getAllOrganizationQuery, userId)
+	if err != nil {
+		return nil, err
+	}
+	var orgs []OrganizationMember
+	err = helper.ParseMap(data, &orgs)
+	if err != nil {
+		return nil, err
+	}
+	return orgs, nil
 }

@@ -92,3 +92,16 @@ func (m *Mockprocessor) getAllMemberOfOrganizationProcessor(organizationId int64
 func (mr *MockprocessorMockRecorder) getAllMemberOfOrganizationProcessor(organizationId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllMemberOfOrganizationProcessor", reflect.TypeOf((*Mockprocessor)(nil).getAllMemberOfOrganizationProcessor), organizationId)
 }
+
+// getAllOrganizationProcessor mocks base method
+func (m *Mockprocessor) getAllOrganizationProcessor(userId int) (string, error) {
+	ret := m.ctrl.Call(m, "getAllOrganizationProcessor", userId)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllOrganizationProcessor indicates an expected call of getAllOrganizationProcessor
+func (mr *MockprocessorMockRecorder) getAllOrganizationProcessor(userId interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllOrganizationProcessor", reflect.TypeOf((*Mockprocessor)(nil).getAllOrganizationProcessor), userId)
+}
