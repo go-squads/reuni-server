@@ -5,8 +5,8 @@ import (
 )
 
 type HttpError struct {
-	Message string
-	Status  int
+	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
 func NewHttpError(status int, message string) *HttpError {
