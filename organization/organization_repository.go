@@ -13,6 +13,7 @@ type repository interface {
 	updateRoleOfUser(newRole string, organizationId, userId int64) error
 	getAllMemberOfOrganization(organizationId int64) ([]map[string]interface{}, error)
 	getAllOrganization(userId int) ([]OrganizationMember, error)
+	translateNameToIdRepository(organizationName string) (int, error)
 }
 
 type mainRepository struct {
@@ -26,6 +27,7 @@ const (
 	updateRoleOfUserQuery           = "UPDATE organization_member SET role=$1 WHERE organization_id=$2 and user_id=$3"
 	getAllMemberOfOrganizationQuery = "SELECT U.username, OM.role, OM.created_at FROM organization_member OM, users U WHERE OM.user_id = U.id AND OM.organization_id=$1"
 	getAllOrganizationQuery         = "SELECT O.id,O.name,OM.role FROM organization O, organization_member OM WHERE O.id=OM.organization_id AND OM.user_id = $1"
+	translateNameToIdQuery          = "SELECT id FROM organization WHERE name = $1"
 )
 
 func initRepository(execer helper.QueryExecuter) *mainRepository {
@@ -80,4 +82,13 @@ func (s *mainRepository) getAllOrganization(userId int) ([]OrganizationMember, e
 		return nil, err
 	}
 	return orgs, nil
+}
+
+func (s *mainRepository) translateNameToIdRepository(organizationName string) (int, error) {
+	data, err := s.execer.DoQueryRow(translateNameToIdQuery, organizationName)
+	if err != nil {
+		return 0, err
+	}
+	id := int(data["id"].(int64))
+	return id, nil
 }

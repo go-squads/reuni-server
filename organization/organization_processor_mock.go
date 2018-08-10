@@ -105,3 +105,16 @@ func (m *Mockprocessor) getAllOrganizationProcessor(userId int) (string, error) 
 func (mr *MockprocessorMockRecorder) getAllOrganizationProcessor(userId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllOrganizationProcessor", reflect.TypeOf((*Mockprocessor)(nil).getAllOrganizationProcessor), userId)
 }
+
+// translateNameToIdProcessor mocks base method
+func (m *Mockprocessor) translateNameToIdProcessor(name string) (int, error) {
+	ret := m.ctrl.Call(m, "translateNameToIdProcessor", name)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// translateNameToIdProcessor indicates an expected call of translateNameToIdProcessor
+func (mr *MockprocessorMockRecorder) translateNameToIdProcessor(name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "translateNameToIdProcessor", reflect.TypeOf((*Mockprocessor)(nil).translateNameToIdProcessor), name)
+}

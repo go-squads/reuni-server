@@ -5,8 +5,9 @@
 package organization
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // Mockrepository is a mock of repository interface
@@ -105,4 +106,17 @@ func (m *Mockrepository) getAllOrganization(userId int) ([]OrganizationMember, e
 // getAllOrganization indicates an expected call of getAllOrganization
 func (mr *MockrepositoryMockRecorder) getAllOrganization(userId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllOrganization", reflect.TypeOf((*Mockrepository)(nil).getAllOrganization), userId)
+}
+
+// translateNameToIdRepository mocks base method
+func (m *Mockrepository) translateNameToIdRepository(organizationName string) (int, error) {
+	ret := m.ctrl.Call(m, "translateNameToIdRepository", organizationName)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// translateNameToIdRepository indicates an expected call of translateNameToIdRepository
+func (mr *MockrepositoryMockRecorder) translateNameToIdRepository(organizationName interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "translateNameToIdRepository", reflect.TypeOf((*Mockrepository)(nil).translateNameToIdRepository), organizationName)
 }

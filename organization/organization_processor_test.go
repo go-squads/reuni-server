@@ -4,18 +4,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-squads/reuni-server/appcontext"
-	"github.com/go-squads/reuni-server/helper"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateOrganizationProcessorShouldReturnErrorWhenCannotCreateOrgnazation(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	mock.EXPECT().createNewOrganization("test").Return(int64(0), errors.New("Test Error"))
 	err := proc.createNewOrganizationProcessor("test", int64(1))
 	assert.Error(t, err)
@@ -23,10 +19,9 @@ func TestCreateOrganizationProcessorShouldReturnErrorWhenCannotCreateOrgnazation
 }
 
 func TestCreateOrganizationProcessorShouldReturnErrorWhenAddUserReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	mock.EXPECT().createNewOrganization("test").Return(int64(1), nil)
 	mock.EXPECT().addUser(int64(1), int64(1), "Admin").Return(errors.New("Test Error"))
 	err := proc.createNewOrganizationProcessor("test", int64(1))
@@ -35,30 +30,19 @@ func TestCreateOrganizationProcessorShouldReturnErrorWhenAddUserReturnError(t *t
 }
 
 func TestCreateOrganizationProcessorShouldNotReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	mock.EXPECT().createNewOrganization("test").Return(int64(1), nil)
 	mock.EXPECT().addUser(int64(1), int64(1), "Admin").Return(nil)
 	err := proc.createNewOrganizationProcessor("test", int64(1))
 	assert.NoError(t, err)
 }
-
-func TestGetRepositoryWhenActiveRepoNil(t *testing.T) {
-	appcontext.InitMockContext(&helper.QueryMockHelper{Data: nil, Err: nil})
-	activeRepository = nil
-	repo := getRepository()
-	assert.NotNil(t, repo)
-
-}
-
 func TestAddUserProcessorShouldNotReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
@@ -81,11 +65,10 @@ func TestAddUserProcessorShouldReturnError(t *testing.T) {
 }
 
 func TestDeleteUserProcessorShouldNotReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 
 	mock.EXPECT().deleteUser(int64(1), int64(1)).Return(nil)
 	err := proc.deleteUserFromGroupProcessor(int64(1), int64(1))
@@ -93,22 +76,21 @@ func TestDeleteUserProcessorShouldNotReturnError(t *testing.T) {
 }
 
 func TestDeleteUserProcessorShouldReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
 		Role:   "aosdkaos",
 	}
+	proc := mainProcessor{repo: nil}
 	err := proc.addUserProcessor(member)
 	assert.Error(t, err)
 }
 
 func TestUpdateRoleOfUserProcessorShouldNotReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
@@ -131,11 +113,10 @@ func TestUpdateRoleOfUserProcessorShouldReturnError(t *testing.T) {
 }
 
 func TestGetAllMemberOfOrganizationProcessorShouldNotReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	mock.EXPECT().getAllMemberOfOrganization(int64(1)).Return([]map[string]interface{}{}, nil)
 	data, err := proc.getAllMemberOfOrganizationProcessor(int64(1))
 	assert.NoError(t, err)
@@ -143,11 +124,10 @@ func TestGetAllMemberOfOrganizationProcessorShouldNotReturnError(t *testing.T) {
 }
 
 func TestGetAllMemberOfOrganizationProcessorShouldReturnError(t *testing.T) {
-	proc := mainProcessor{}
 	ctrl := gomock.NewController(t)
 	mock := NewMockrepository(ctrl)
 
-	activeRepository = mock
+	proc := mainProcessor{repo: mock}
 	mock.EXPECT().getAllMemberOfOrganization(int64(1)).Return(nil, errors.New("Internal error"))
 	data, err := proc.getAllMemberOfOrganizationProcessor(int64(1))
 	assert.Error(t, err)

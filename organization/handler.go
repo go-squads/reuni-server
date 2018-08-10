@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-squads/reuni-server/appcontext"
+
 	"github.com/go-squads/reuni-server/helper"
 	"github.com/gorilla/mux"
 
@@ -17,7 +19,7 @@ var proc processor
 
 func getProcessor() processor {
 	if proc == nil {
-		proc = &mainProcessor{}
+		proc = &mainProcessor{repo: initRepository(appcontext.GetHelper())}
 	}
 	return proc
 }
@@ -57,12 +59,17 @@ func CreateOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 
 func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	var member Member
-	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().translateNameToIdProcessor(organizationName)
+	if err != nil {
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
 	if err != nil {
 		response.ResponseError("AddUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return
 	}
-	log.Printf("AddUser: Get Request to add user to org: %d", orgID)
+	log.Printf("AddUser: Get Request to add user to org: %d", organizationId)
 	err = json.NewDecoder(r.Body).Decode(&member)
 	defer r.Body.Close()
 
@@ -71,7 +78,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Add user: error parsing body")
 		return
 	}
-	member.OrgId = orgID
+	member.OrgId = int64(organizationId)
 	err = getProcessor().addUserProcessor(&member)
 	if err != nil {
 		response.ResponseError("AddUser", getFromContext(r, "username"), w, err)
@@ -82,13 +89,14 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func DeleteUserFromGroupHandler(w http.ResponseWriter, r *http.Request) {
 	var member Member
-	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
-	fmt.Println("ORG ID: " + fmt.Sprint(orgID))
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().translateNameToIdProcessor(organizationName)
+	orgId := int64(organizationId)
 	if err != nil {
 		response.ResponseError("DeleteUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return
 	}
-	log.Printf("DeleteUser: Get Request to add user to org: %d", orgID)
+	log.Printf("DeleteUser: Get Request to delete user to org: %d", organizationId)
 	err = json.NewDecoder(r.Body).Decode(&member)
 	defer r.Body.Close()
 
@@ -97,7 +105,7 @@ func DeleteUserFromGroupHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("DeleteUser: error parsing body")
 		return
 	}
-	err = getProcessor().deleteUserFromGroupProcessor(orgID, member.UserId)
+	err = getProcessor().deleteUserFromGroupProcessor(orgId, member.UserId)
 	if err != nil {
 		response.ResponseError("DeleteUser", getFromContext(r, "username"), w, err)
 		return
@@ -107,12 +115,14 @@ func DeleteUserFromGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 func UpdateRoleOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	var member Member
-	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().translateNameToIdProcessor(organizationName)
+	orgId := int64(organizationId)
 	if err != nil {
 		response.ResponseError("AddUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return
 	}
-	log.Printf("UpdateRoleOfUser: Get Request to update user %d role to: %s", orgID, member.Role)
+	log.Printf("UpdateRoleOfUser: Get Request to update user %d role to: %s", orgId, member.Role)
 	err = json.NewDecoder(r.Body).Decode(&member)
 	defer r.Body.Close()
 
@@ -121,7 +131,7 @@ func UpdateRoleOfUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("UpdateRoleOfUser: error parsing body")
 		return
 	}
-	member.OrgId = orgID
+	member.OrgId = orgId
 	err = getProcessor().updateRoleOfUserProcessor(&member)
 	if err != nil {
 		response.ResponseError("UpdateRoleOfUser", getFromContext(r, "username"), w, err)
@@ -132,7 +142,9 @@ func UpdateRoleOfUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllMemberOfOrganizationHandler(w http.ResponseWriter, r *http.Request) {
-	orgID, err := strconv.ParseInt(mux.Vars(r)["org_id"], 10, 64)
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().translateNameToIdProcessor(organizationName)
+	orgID := int64(organizationId)
 	if err != nil {
 		response.ResponseError("GetAllMemberOfOrganization", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return

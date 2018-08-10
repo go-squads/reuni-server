@@ -86,6 +86,7 @@ func TestCreateOrganizationHandlerShouldReturn500WhenProcessorError(t *testing.T
 			"name": "test"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().createNewOrganizationProcessor("test", int64(1)).Return(errors.New("Internal Error"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/organization", strings.NewReader(payload))
@@ -102,18 +103,12 @@ func TestCreateOrganizationHandlerShouldReturn201(t *testing.T) {
 			"name": "test"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().createNewOrganizationProcessor("test", int64(1)).Return(nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/organization", strings.NewReader(payload))
 	ServeRequest(rr, req.WithContext(context.WithValue(req.Context(), "userId", 1)), CreateOrganizationHandler)
 	assert.Equal(t, http.StatusCreated, rr.Code)
-}
-
-func TestGetProcessorShouldInstantiateMainRepository(t *testing.T) {
-	proc = nil
-	activeProc := getProcessor()
-	_, ok := activeProc.(*mainProcessor)
-	assert.True(t, ok)
 }
 
 func TestAddUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
@@ -126,6 +121,7 @@ func TestAddUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
 			"role": "Developer"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
@@ -133,9 +129,9 @@ func TestAddUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
 	}
 	mock.EXPECT().addUserProcessor(member).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/organization/error/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", AddUserHandler).Methods("POST")
+	r.HandleFunc("/organization/{organization_name}/member", AddUserHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -154,11 +150,12 @@ func TestAddUserShouldReturn500WhenBodyCantBeParsed(t *testing.T) {
 		UserId: int64(1),
 		Role:   "Developer",
 	}
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().addUserProcessor(member).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", AddUserHandler).Methods("POST")
+	r.HandleFunc("/organization/{organization_name}/member", AddUserHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -173,6 +170,7 @@ func TestAddUserShouldReturnErrorWhenDataMemberIsNotValid(t *testing.T) {
 			"role": "ooa"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
@@ -180,9 +178,9 @@ func TestAddUserShouldReturnErrorWhenDataMemberIsNotValid(t *testing.T) {
 	}
 	mock.EXPECT().addUserProcessor(member).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", AddUserHandler).Methods("POST")
+	r.HandleFunc("/organization/{organization_name}/member", AddUserHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -196,6 +194,7 @@ func TestAddUserShouldReturn201WhenAddSuccess(t *testing.T) {
 			"role": "Developer"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	member := &Member{
 		OrgId:  int64(1),
 		UserId: int64(1),
@@ -203,23 +202,27 @@ func TestAddUserShouldReturn201WhenAddSuccess(t *testing.T) {
 	}
 	mock.EXPECT().addUserProcessor(member).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", AddUserHandler).Methods("POST")
+	r.HandleFunc("/organization/{organization_name}/member", AddUserHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusCreated, rr.Code)
 }
 
 func TestDeleteUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
 	payload := `
 		{
 			"user_id": 1
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(0, errors.New("Test Error"))
+	proc = mock
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/organization/error/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("DELETE", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", DeleteUserFromGroupHandler).Methods("DELETE")
+	r.HandleFunc("/organization/{organization_name}/member", DeleteUserFromGroupHandler).Methods("DELETE")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -233,11 +236,12 @@ func TestDeleteUserShouldReturn500WhenBodyCantBeParsed(t *testing.T) {
 			adasdas
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().deleteUserFromGroupProcessor(int64(1), int64(1)).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("DELETE", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", DeleteUserFromGroupHandler).Methods("DELETE")
+	r.HandleFunc("/organization/{organization_name}/member", DeleteUserFromGroupHandler).Methods("DELETE")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -251,11 +255,12 @@ func TestDeleteUserShouldReturnErrorWhenDataIsNotValid(t *testing.T) {
 			"user_id": 1
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().deleteUserFromGroupProcessor(int64(1), int64(1)).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("DELETE", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", DeleteUserFromGroupHandler).Methods("DELETE")
+	r.HandleFunc("/organization/{organization_name}/member", DeleteUserFromGroupHandler).Methods("DELETE")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -268,26 +273,31 @@ func TestDeleteUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
 			"user_id": 1
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().deleteUserFromGroupProcessor(int64(1), int64(1)).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("DELETE", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", DeleteUserFromGroupHandler).Methods("DELETE")
+	r.HandleFunc("/organization/{organization_name}/member", DeleteUserFromGroupHandler).Methods("DELETE")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
 func TestUpdateRoleOfUserShouldReturn500WhenOrgIdCantBeParsed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
 	payload := `
 		{
 			"user_id": 1,
 			"role": "Admin"
 		}
 	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(0, errors.New("Test Error"))
+	proc = mock
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/organization/error/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("PATCH", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.HandleFunc("/organization/{organization_name}/member", UpdateRoleOfUserHandler).Methods("PATCH")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -306,11 +316,12 @@ func TestUpdateRoleOfUserShouldReturn500WhenBodyCantBeParsed(t *testing.T) {
 		UserId: int64(1),
 		Role:   "Developer",
 	}
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().updateRoleOfUserProcessor(member).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("PATCH", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.HandleFunc("/organization/{organization_name}/member", UpdateRoleOfUserHandler).Methods("PATCH")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -330,11 +341,12 @@ func TestUpdateRoleOfUserShouldReturnErrorWhenDataIsNotValid(t *testing.T) {
 		UserId: int64(1),
 		Role:   "Auditor",
 	}
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().updateRoleOfUserProcessor(member).Return(errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("PATCH", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.HandleFunc("/organization/{organization_name}/member", UpdateRoleOfUserHandler).Methods("PATCH")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -353,11 +365,12 @@ func TestUpdateRoleOfUserShouldReturn200WhenDeleteSuccess(t *testing.T) {
 		UserId: int64(1),
 		Role:   "Auditor",
 	}
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().updateRoleOfUserProcessor(member).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/organization/1/member", strings.NewReader(payload))
+	req, _ := http.NewRequest("PATCH", "/organization/test/member", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", UpdateRoleOfUserHandler).Methods("PATCH")
+	r.HandleFunc("/organization/{organization_name}/member", UpdateRoleOfUserHandler).Methods("PATCH")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
@@ -366,12 +379,12 @@ func TestGetAllMemberOfOrganizationShouldReturn500Error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
 	proc = mock
-
-	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, errors.New("ew"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/organization/error500/member", strings.NewReader(""))
+	req, _ := http.NewRequest("GET", "/organization/test/member", strings.NewReader(""))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.HandleFunc("/organization/{organization_name}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -380,12 +393,12 @@ func TestGetAllMemberOfOrganizationShouldReturnErrorWhenOrgIdIsNotValid(t *testi
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
 	proc = mock
-
-	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(10)).Return(nil, errors.New("Internal error"))
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, errors.New("Internal error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/organization/10/member", strings.NewReader(""))
+	req, _ := http.NewRequest("GET", "/organization/test/member", strings.NewReader(""))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.HandleFunc("/organization/{organization_name}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -394,12 +407,12 @@ func TestGetAllMemberOfOrganizationShouldReturn200OK(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
 	proc = mock
-
+	mock.EXPECT().translateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/organization/1/member", strings.NewReader(""))
+	req, _ := http.NewRequest("GET", "/organization/test/member", strings.NewReader(""))
 	r := mux.NewRouter()
-	r.HandleFunc("/organization/{org_id}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.HandleFunc("/organization/{organization_name}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
