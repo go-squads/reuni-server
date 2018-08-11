@@ -56,6 +56,9 @@ func (s *mainProcessor) getAllOrganizationProcessor(userId int) (string, error) 
 	if err != nil {
 		return "", err
 	}
+	if res == nil {
+		return "[]", nil
+	}
 	resJSON, err := json.Marshal(res)
 	if err != nil {
 		return "", err

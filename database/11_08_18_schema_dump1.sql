@@ -5,7 +5,7 @@
 -- Dumped from database version 10.4
 -- Dumped by pg_dump version 10.4
 
--- Started on 2018-08-08 16:31:59 UTC
+-- Started on 2018-08-11 09:16:21 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -26,7 +26,7 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- TOC entry 2224 (class 0 OID 0)
+-- TOC entry 2223 (class 0 OID 0)
 -- Dependencies: 1
 -- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
 --
@@ -34,21 +34,35 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
+--
+-- TOC entry 208 (class 1255 OID 33006)
+-- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: postgresdev
+--
+
+CREATE FUNCTION public.update_timestamp() RETURNS timestamp without time zone
+    LANGUAGE sql
+    AS $$
+select now()::timestamp
+$$;
+
+
+ALTER FUNCTION public.update_timestamp() OWNER TO postgresdev;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- TOC entry 196 (class 1259 OID 16456)
+-- TOC entry 196 (class 1259 OID 32914)
 -- Name: configurations; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
 CREATE TABLE public.configurations (
     id integer NOT NULL,
     namespace text,
-    version numeric DEFAULT 1,
+    version integer DEFAULT 1,
     config_store jsonb,
-    service_id numeric,
+    service_id integer,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now(),
     created_by text
@@ -58,7 +72,7 @@ CREATE TABLE public.configurations (
 ALTER TABLE public.configurations OWNER TO postgresdev;
 
 --
--- TOC entry 197 (class 1259 OID 16463)
+-- TOC entry 197 (class 1259 OID 32923)
 -- Name: configurations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgresdev
 --
 
@@ -74,7 +88,7 @@ CREATE SEQUENCE public.configurations_id_seq
 ALTER TABLE public.configurations_id_seq OWNER TO postgresdev;
 
 --
--- TOC entry 2225 (class 0 OID 0)
+-- TOC entry 2224 (class 0 OID 0)
 -- Dependencies: 197
 -- Name: configurations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgresdev
 --
@@ -83,22 +97,25 @@ ALTER SEQUENCE public.configurations_id_seq OWNED BY public.configurations.id;
 
 
 --
--- TOC entry 202 (class 1259 OID 16493)
+-- TOC entry 198 (class 1259 OID 32925)
 -- Name: namespaces; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
 CREATE TABLE public.namespaces (
-    service_id numeric NOT NULL,
+    service_id integer NOT NULL,
     namespace text NOT NULL,
-    active_version numeric DEFAULT 1,
-    id integer NOT NULL
+    active_version integer DEFAULT 1,
+    id integer NOT NULL,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    created_by text
 );
 
 
 ALTER TABLE public.namespaces OWNER TO postgresdev;
 
 --
--- TOC entry 203 (class 1259 OID 16505)
+-- TOC entry 199 (class 1259 OID 32932)
 -- Name: namespaces_id_seq; Type: SEQUENCE; Schema: public; Owner: postgresdev
 --
 
@@ -114,8 +131,8 @@ CREATE SEQUENCE public.namespaces_id_seq
 ALTER TABLE public.namespaces_id_seq OWNER TO postgresdev;
 
 --
--- TOC entry 2226 (class 0 OID 0)
--- Dependencies: 203
+-- TOC entry 2225 (class 0 OID 0)
+-- Dependencies: 199
 -- Name: namespaces_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgresdev
 --
 
@@ -123,7 +140,7 @@ ALTER SEQUENCE public.namespaces_id_seq OWNED BY public.namespaces.id;
 
 
 --
--- TOC entry 205 (class 1259 OID 32837)
+-- TOC entry 200 (class 1259 OID 32934)
 -- Name: organization; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
@@ -138,7 +155,7 @@ CREATE TABLE public.organization (
 ALTER TABLE public.organization OWNER TO postgresdev;
 
 --
--- TOC entry 204 (class 1259 OID 32835)
+-- TOC entry 201 (class 1259 OID 32942)
 -- Name: organization_id_seq; Type: SEQUENCE; Schema: public; Owner: postgresdev
 --
 
@@ -154,8 +171,8 @@ CREATE SEQUENCE public.organization_id_seq
 ALTER TABLE public.organization_id_seq OWNER TO postgresdev;
 
 --
--- TOC entry 2227 (class 0 OID 0)
--- Dependencies: 204
+-- TOC entry 2226 (class 0 OID 0)
+-- Dependencies: 201
 -- Name: organization_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgresdev
 --
 
@@ -163,7 +180,7 @@ ALTER SEQUENCE public.organization_id_seq OWNED BY public.organization.id;
 
 
 --
--- TOC entry 206 (class 1259 OID 32850)
+-- TOC entry 202 (class 1259 OID 32944)
 -- Name: organization_member; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
@@ -171,8 +188,8 @@ CREATE TABLE public.organization_member (
     organization_id integer NOT NULL,
     user_id integer NOT NULL,
     role text NOT NULL,
-    created_at time without time zone DEFAULT now(),
-    updated_at time without time zone DEFAULT now(),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
     CONSTRAINT role_constraint CHECK ((role = ANY (ARRAY['Admin'::text, 'Developer'::text, 'Auditor'::text])))
 );
 
@@ -180,24 +197,25 @@ CREATE TABLE public.organization_member (
 ALTER TABLE public.organization_member OWNER TO postgresdev;
 
 --
--- TOC entry 198 (class 1259 OID 16465)
+-- TOC entry 203 (class 1259 OID 32953)
 -- Name: services; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
 CREATE TABLE public.services (
     id integer NOT NULL,
-    owner_id numeric,
+    organization_id integer,
     name text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    authorization_token text NOT NULL
+    authorization_token text NOT NULL,
+    created_by text
 );
 
 
 ALTER TABLE public.services OWNER TO postgresdev;
 
 --
--- TOC entry 199 (class 1259 OID 16472)
+-- TOC entry 204 (class 1259 OID 32961)
 -- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgresdev
 --
 
@@ -213,8 +231,8 @@ CREATE SEQUENCE public.services_id_seq
 ALTER TABLE public.services_id_seq OWNER TO postgresdev;
 
 --
--- TOC entry 2228 (class 0 OID 0)
--- Dependencies: 199
+-- TOC entry 2227 (class 0 OID 0)
+-- Dependencies: 204
 -- Name: services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgresdev
 --
 
@@ -222,7 +240,7 @@ ALTER SEQUENCE public.services_id_seq OWNED BY public.services.id;
 
 
 --
--- TOC entry 200 (class 1259 OID 16474)
+-- TOC entry 205 (class 1259 OID 32963)
 -- Name: users; Type: TABLE; Schema: public; Owner: postgresdev
 --
 
@@ -240,7 +258,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgresdev;
 
 --
--- TOC entry 201 (class 1259 OID 16480)
+-- TOC entry 206 (class 1259 OID 32969)
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgresdev
 --
 
@@ -256,8 +274,8 @@ CREATE SEQUENCE public.users_id_seq
 ALTER TABLE public.users_id_seq OWNER TO postgresdev;
 
 --
--- TOC entry 2229 (class 0 OID 0)
--- Dependencies: 201
+-- TOC entry 2228 (class 0 OID 0)
+-- Dependencies: 206
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgresdev
 --
 
@@ -265,7 +283,7 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- TOC entry 2059 (class 2604 OID 16482)
+-- TOC entry 2062 (class 2604 OID 32971)
 -- Name: configurations id; Type: DEFAULT; Schema: public; Owner: postgresdev
 --
 
@@ -273,7 +291,7 @@ ALTER TABLE ONLY public.configurations ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 2067 (class 2604 OID 16507)
+-- TOC entry 2064 (class 2604 OID 32972)
 -- Name: namespaces id; Type: DEFAULT; Schema: public; Owner: postgresdev
 --
 
@@ -281,7 +299,7 @@ ALTER TABLE ONLY public.namespaces ALTER COLUMN id SET DEFAULT nextval('public.n
 
 
 --
--- TOC entry 2068 (class 2604 OID 32840)
+-- TOC entry 2067 (class 2604 OID 32973)
 -- Name: organization id; Type: DEFAULT; Schema: public; Owner: postgresdev
 --
 
@@ -289,7 +307,7 @@ ALTER TABLE ONLY public.organization ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 2063 (class 2604 OID 16483)
+-- TOC entry 2071 (class 2604 OID 32974)
 -- Name: services id; Type: DEFAULT; Schema: public; Owner: postgresdev
 --
 
@@ -297,7 +315,7 @@ ALTER TABLE ONLY public.services ALTER COLUMN id SET DEFAULT nextval('public.ser
 
 
 --
--- TOC entry 2065 (class 2604 OID 16484)
+-- TOC entry 2072 (class 2604 OID 32975)
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: postgresdev
 --
 
@@ -305,7 +323,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
--- TOC entry 2077 (class 2606 OID 16502)
+-- TOC entry 2084 (class 2606 OID 32977)
 -- Name: services auth_unique; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -314,7 +332,7 @@ ALTER TABLE ONLY public.services
 
 
 --
--- TOC entry 2075 (class 2606 OID 16486)
+-- TOC entry 2074 (class 2606 OID 32979)
 -- Name: configurations configurations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -323,7 +341,7 @@ ALTER TABLE ONLY public.configurations
 
 
 --
--- TOC entry 2083 (class 2606 OID 24646)
+-- TOC entry 2090 (class 2606 OID 32981)
 -- Name: users email_unique; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -332,7 +350,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 2089 (class 2606 OID 16515)
+-- TOC entry 2076 (class 2606 OID 32983)
 -- Name: namespaces id; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -341,7 +359,7 @@ ALTER TABLE ONLY public.namespaces
 
 
 --
--- TOC entry 2091 (class 2606 OID 32847)
+-- TOC entry 2078 (class 2606 OID 32985)
 -- Name: organization name_unique; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -350,7 +368,7 @@ ALTER TABLE ONLY public.organization
 
 
 --
--- TOC entry 2095 (class 2606 OID 32857)
+-- TOC entry 2082 (class 2606 OID 32987)
 -- Name: organization_member organization_member_pkey; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -359,7 +377,7 @@ ALTER TABLE ONLY public.organization_member
 
 
 --
--- TOC entry 2093 (class 2606 OID 32845)
+-- TOC entry 2080 (class 2606 OID 32989)
 -- Name: organization organization_pkey; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -368,7 +386,7 @@ ALTER TABLE ONLY public.organization
 
 
 --
--- TOC entry 2079 (class 2606 OID 16488)
+-- TOC entry 2086 (class 2606 OID 32991)
 -- Name: services services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -377,7 +395,7 @@ ALTER TABLE ONLY public.services
 
 
 --
--- TOC entry 2081 (class 2606 OID 16490)
+-- TOC entry 2088 (class 2606 OID 32993)
 -- Name: services unique_name; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -386,7 +404,7 @@ ALTER TABLE ONLY public.services
 
 
 --
--- TOC entry 2085 (class 2606 OID 24644)
+-- TOC entry 2092 (class 2606 OID 32995)
 -- Name: users username_unique; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -395,7 +413,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 2087 (class 2606 OID 16492)
+-- TOC entry 2094 (class 2606 OID 32997)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgresdev
 --
 
@@ -403,7 +421,16 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
--- Completed on 2018-08-08 16:32:03 UTC
+--
+-- TOC entry 2095 (class 2606 OID 32998)
+-- Name: services organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgresdev
+--
+
+ALTER TABLE ONLY public.services
+    ADD CONSTRAINT organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+-- Completed on 2018-08-11 09:16:25 UTC
 
 --
 -- PostgreSQL database dump complete

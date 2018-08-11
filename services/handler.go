@@ -27,7 +27,6 @@ func getFromContext(r *http.Request, key string) string {
 	}
 	return fmt.Sprintf("%v", data)
 }
-
 func toString(obj interface{}) string {
 	js, _ := json.Marshal(obj)
 	return string(js)
@@ -43,6 +42,10 @@ func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
 	services, err := getProcessor().getAllServicesBasedOnOrganizationProcessor(organizationId)
 	if err != nil {
 		response.ResponseError("GetAllService", getFromContext(r, "username"), w, err)
+		return
+	}
+	if len(services) == 0 {
+		response.ResponseHelper(w, http.StatusOK, response.ContentJson, "[]")
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, toString(services))
@@ -62,6 +65,7 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
+	servicedata.CreatedBy = getFromContext(r, "username")
 	err = getProcessor().createServiceProcessor(servicedata, organizationId)
 	if err != nil {
 		response.ResponseError("CreateService", getFromContext(r, "username"), w, err)

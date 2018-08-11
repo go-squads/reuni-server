@@ -18,11 +18,12 @@ import (
 func ServeRequest(rr *httptest.ResponseRecorder, req *http.Request, handler http.HandlerFunc) {
 	handler.ServeHTTP(rr, req)
 }
-
-func TestGetProcessor(t *testing.T) {
-	proc = nil
-	procNew := getProcessor()
-	assert.NotNil(t, procNew)
+func TestToString(t *testing.T) {
+	data := make(map[string]interface{})
+	data["id"] = 1
+	res := toString(data)
+	expected, _ := json.Marshal(data)
+	assert.Equal(t, string(expected), res)
 }
 
 func TestGetAllHandlerShouldNotPanic(t *testing.T) {

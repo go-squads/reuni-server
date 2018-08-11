@@ -8,10 +8,12 @@ type service struct {
 	AuthorizationToken string     `json:"authorization_token"`
 	CreatedAt          *time.Time `json:"created_at"`
 	OrganizationId     int        `json:"organization_id"`
+	CreatedBy          string     `json:"created_by"`
 }
 
 type servicev struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
+	CreatedBy string `json:"created_by"`
 }
 
 type serviceToken struct {

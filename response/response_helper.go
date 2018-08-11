@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-squads/reuni-server/helper"
 	log "github.com/sirupsen/logrus"
+	"github.com/lib/pq"
 )
 
 const (
@@ -33,7 +34,11 @@ func ResponseError(caller, user string, w http.ResponseWriter, err error) {
 		msg, _ := json.Marshal(httpErr)
 		http.Error(w, string(msg), httpErr.Status)
 	} else {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		if pqErr,ok := err.(*pq.Error); ok {
+			log.Println(pqErr.Code)
+			log.Println(pqErr.Message)
+		}
+		http.Error(w, `{"status": 500, "message": "Internal Server Error"}`, http.StatusInternalServerError)
 	}
 
 }

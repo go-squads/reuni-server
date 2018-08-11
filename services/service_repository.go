@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	getAllServicesQuery       = "SELECT id,name,created_at FROM services WHERE organization_id=$1"
-	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token) VALUES ($1,$2,$3)"
+	getAllServicesQuery       = "SELECT id,name,created_at,created_by FROM services WHERE organization_id = $1"
+	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token, created_by) VALUES ($1,$2,$3,$4)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
-	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
+	findOneServiceByNameQuery = "SELECT id, name, created_by FROM services WHERE name = $1"
 	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
 	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
@@ -50,7 +50,7 @@ func (s *serviceRepository) getAll(organizationId int) ([]service, error) {
 }
 
 func (s *serviceRepository) createService(servicestore service) error {
-	_, err := s.execer.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken)
+	_, err := s.execer.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken, servicestore.CreatedBy)
 	return err
 }
 
