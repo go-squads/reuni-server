@@ -44,7 +44,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE public.configurations (
-    id serial NOT NULL,
+    id integer NOT NULL,
     namespace text,
     version integer DEFAULT 1,
     config_store jsonb,
@@ -91,7 +91,7 @@ CREATE TABLE public.namespaces (
     service_id integer NOT NULL,
     namespace text NOT NULL,
     active_version integer DEFAULT 1,
-    id serial NOT NULL
+    id integer NOT NULL
 );
 
 
@@ -128,7 +128,7 @@ ALTER SEQUENCE public.namespaces_id_seq OWNED BY public.namespaces.id;
 --
 
 CREATE TABLE public.organization (
-    id serial NOT NULL,
+    id integer NOT NULL,
     name text,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
@@ -185,7 +185,7 @@ ALTER TABLE public.organization_member OWNER TO postgresdev;
 --
 
 CREATE TABLE public.services (
-    id serial NOT NULL,
+    id integer NOT NULL,
     organization_id integer,
     name text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT now() NOT NULL,

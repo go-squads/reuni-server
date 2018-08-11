@@ -29,7 +29,7 @@ func TestGetAllServiceShouldNotReturnErrorWhenQueryReturnOneData(t *testing.T) {
 		Data: data,
 		Err:  nil,
 	}
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	var expected []service
 
 	expected = append(expected, MockServiceStruct(1, "go-pay-service"))
@@ -47,7 +47,7 @@ func TestGetAllServiceShouldNotReturnErrorWhenDataMoreThanOne(t *testing.T) {
 		Data: data,
 		Err:  nil,
 	}
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	var expected []service
 	expected = append(expected, MockServiceStruct(1, "go-pay-service"))
 	expected = append(expected, MockServiceStruct(2, "go-ride-service"))
@@ -61,7 +61,7 @@ func TestGetAllServiceShouldNotReturnErrorWhenQueryDoesNotReturnData(t *testing.
 		Data: data,
 		Err:  nil,
 	}
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	assert.Empty(t, services)
 	assert.NoError(t, err)
 }
@@ -71,7 +71,7 @@ func TestGetAllServiceShouldReturnErrorWhenQueryReturnError(t *testing.T) {
 		Data: nil,
 		Err:  errors.New("Query Return Error"),
 	}
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	assert.Nil(t, services)
 	assert.Error(t, err)
 }
@@ -87,7 +87,7 @@ func TestGetAllServiceShouldNotReturnErrorWhenDataNotParseableToStruct(t *testin
 	}
 	var expected []service
 	expected = append(expected, MockServiceStruct(0, ""))
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	assert.Equal(t, expected, services)
 	assert.NoError(t, err)
 }
@@ -101,7 +101,7 @@ func TestGetAllServiceShouldReturnErrorWhenDataNotMarshalable(t *testing.T) {
 		Data: data,
 		Err:  nil,
 	}
-	services, err := getAll(mock)
+	services, err := getAll(mock,1)
 	assert.Nil(t, services)
 	assert.Error(t, err)
 }

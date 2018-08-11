@@ -28,9 +28,19 @@ func toString(obj interface{}) string {
 }
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
-	services, err := getAll(context.GetHelper())
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := translateNameToIdRepository(appcontext.GetHelper(), organizationName)
+	if err != nil {
+		response.ResponseError("GetAllService", getUsername(r),w,err)
+		return
+	}
+	services, err := getAll(context.GetHelper(), organizationId)
 	if err != nil {
 		response.ResponseError("GetAllService", getUsername(r), w, err)
+		return
+	}
+	if len(services) == 0 {
+		response.ResponseHelper(w, http.StatusOK, response.ContentJson, "[]")
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, toString(services))

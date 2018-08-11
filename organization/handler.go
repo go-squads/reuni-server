@@ -166,6 +166,7 @@ func GetAllHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	orgs, err := getProcessor().getAllOrganizationProcessor(int(uid))
+
 	if err != nil {
 		response.ResponseError("GetAllHandler", getFromContext(r, "username"), w, err)
 		return

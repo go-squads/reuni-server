@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	getAllServicesQuery       = "SELECT id,name,created_at FROM services"
+	getAllServicesQuery       = "SELECT id,name,created_at FROM services WHERE organization_id = $1"
 	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token) VALUES ($1,$2,$3)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
 	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
@@ -13,8 +13,8 @@ const (
 	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
 
-func getAll(q helper.QueryExecuter) ([]service, error) {
-	data, err := q.DoQuery(getAllServicesQuery)
+func getAll(q helper.QueryExecuter, organizationId int) ([]service, error) {
+	data, err := q.DoQuery(getAllServicesQuery,organizationId)
 	if err != nil {
 		return nil, err
 	}

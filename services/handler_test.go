@@ -16,47 +16,6 @@ import (
 func ServeRequest(rr *httptest.ResponseRecorder, req *http.Request, handler http.HandlerFunc) {
 	handler.ServeHTTP(rr, req)
 }
-func TestGetAllHandlerShouldNotPanic(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{MockServiceMap(1, "test-service")},
-		Err:  nil,
-	}
-	appcontext.InitMockContext(q)
-	req, err := http.NewRequest("GET", "/services", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr := httptest.NewRecorder()
-	ServeRequest(rr, req, GetAllServicesHandler)
-	assert.Equal(t, rr.Code, http.StatusOK)
-	exp, _ := json.Marshal([]service{MockServiceStruct(1, "test-service")})
-	assert.Equal(t, string(exp), rr.Body.String())
-}
-
-func TestGetAllHandlerShouldReturnErrorWhenBadRequest(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  helper.NewHttpError(400, "Bad Request"),
-	}
-	appcontext.InitMockContext(q)
-	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services", nil)
-	ServeRequest(rr, req, GetAllServicesHandler)
-	assert.Equal(t, http.StatusBadRequest, rr.Code)
-}
-
-func TestGetAllHandlerShouldReturnError500WhenObjectNotMarshalable(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{map[string]interface{}{"test": make(chan int)}},
-		Err:  nil,
-	}
-	appcontext.InitMockContext(q)
-	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services", nil)
-	ServeRequest(rr, req, GetAllServicesHandler)
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-}
-
 // func TestCreateServiceHandlerShouldNotReturnError(t *testing.T) {
 // 	q := &helper.QueryMockHelper{
 // 		Data: []map[string]interface{}{map[string]interface{}{"test": make(chan int)}},
