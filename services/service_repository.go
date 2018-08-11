@@ -1,11 +1,14 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+
 	"github.com/go-squads/reuni-server/helper"
 )
 
 const (
-	getAllServicesQuery       = "SELECT id,name,created_at FROM services"
+	getAllServicesQuery       = "SELECT id,name,created_at FROM services WHERE organization_id=$1"
 	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token) VALUES ($1,$2,$3)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
 	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
@@ -13,8 +16,28 @@ const (
 	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
 
-func getAll(q helper.QueryExecuter) ([]service, error) {
-	data, err := q.DoQuery(getAllServicesQuery)
+type serviceRepositoryInterface interface {
+	getAll(organizationId int) ([]service, error)
+	createService(servicestore service) error
+	deleteService(servicestore service) error
+	getServiceToken(name string) (*serviceToken, error)
+	findOneServiceByName(name string) (*service, error)
+	translateNameToIdRepository(organizationName string) (int, error)
+	generateToken() string
+}
+
+type serviceRepository struct {
+	execer helper.QueryExecuter
+}
+
+func initRepository(execer helper.QueryExecuter) *serviceRepository {
+	return &serviceRepository{
+		execer: execer,
+	}
+}
+
+func (s *serviceRepository) getAll(organizationId int) ([]service, error) {
+	data, err := s.execer.DoQuery(getAllServicesQuery, organizationId)
 	if err != nil {
 		return nil, err
 	}
@@ -26,18 +49,18 @@ func getAll(q helper.QueryExecuter) ([]service, error) {
 	return services, nil
 }
 
-func createService(q helper.QueryExecuter, servicestore service) error {
-	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken)
+func (s *serviceRepository) createService(servicestore service) error {
+	_, err := s.execer.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken)
 	return err
 }
 
-func deleteService(q helper.QueryExecuter, servicestore service) error {
-	_, err := q.DoQuery(deleteServiceQuery, servicestore.Name)
+func (s *serviceRepository) deleteService(servicestore service) error {
+	_, err := s.execer.DoQuery(deleteServiceQuery, servicestore.Name)
 	return err
 }
 
-func findOneServiceByName(q helper.QueryExecuter, name string) (*service, error) {
-	data, err := q.DoQuery(findOneServiceByNameQuery, name)
+func (s *serviceRepository) findOneServiceByName(name string) (*service, error) {
+	data, err := s.execer.DoQuery(findOneServiceByNameQuery, name)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +75,9 @@ func findOneServiceByName(q helper.QueryExecuter, name string) (*service, error)
 	return &dest, err
 }
 
-func getServiceToken(q helper.QueryExecuter, name string) (*serviceToken, error) {
+func (s *serviceRepository) getServiceToken(name string) (*serviceToken, error) {
 	var token serviceToken
-	data, err := q.DoQuery(getServiceTokenQuery, name)
+	data, err := s.execer.DoQuery(getServiceTokenQuery, name)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +91,17 @@ func getServiceToken(q helper.QueryExecuter, name string) (*serviceToken, error)
 	return &token, nil
 }
 
-func translateNameToIdRepository(q helper.QueryExecuter, organizationName string) (int, error) {
-	data, err := q.DoQueryRow(translateNameToIdQuery, organizationName)
+func (s *serviceRepository) translateNameToIdRepository(organizationName string) (int, error) {
+	data, err := s.execer.DoQueryRow(translateNameToIdQuery, organizationName)
 	if err != nil {
 		return 0, err
 	}
 	id := int(data["id"].(int64))
 	return id, nil
+}
+
+func (p *serviceRepository) generateToken() string {
+	randomBytes := make([]byte, 64)
+	rand.Read(randomBytes)
+	return base64.StdEncoding.EncodeToString(randomBytes)[:64]
 }
