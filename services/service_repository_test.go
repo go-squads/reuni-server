@@ -4,9 +4,27 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+
 	"github.com/go-squads/reuni-server/helper"
 	"github.com/stretchr/testify/assert"
 )
+
+func makeMockRow(data map[string]interface{}, err error) *helper.QueryMockHelper {
+	return &helper.QueryMockHelper{
+		Row: data,
+		Err: err,
+	}
+}
+func makeMockRows(data []map[string]interface{}, err error) *helper.QueryMockHelper {
+	return &helper.QueryMockHelper{
+		Data: data,
+		Err:  err,
+	}
+}
+func makeRows(args ...map[string]interface{}) []map[string]interface{} {
+	return args
+}
 
 func MockServiceMap(id int, name string) map[string]interface{} {
 	m := make(map[string]interface{})
@@ -25,11 +43,8 @@ func TestGetAllServiceShouldNotReturnErrorWhenQueryReturnOneData(t *testing.T) {
 	var data []map[string]interface{}
 	data = append(data, MockServiceMap(1, "go-pay-service"))
 
-	mock := &helper.QueryMockHelper{
-		Data: data,
-		Err:  nil,
-	}
-	services, err := getAll(mock,1)
+	rep := initRepository(makeMockRows(data, nil))
+	services, err := rep.getAll(1)
 	var expected []service
 
 	expected = append(expected, MockServiceStruct(1, "go-pay-service"))
@@ -43,11 +58,8 @@ func TestGetAllServiceShouldNotReturnErrorWhenDataMoreThanOne(t *testing.T) {
 	data = append(data, MockServiceMap(1, "go-pay-service"))
 	data = append(data, MockServiceMap(2, "go-ride-service"))
 
-	mock := &helper.QueryMockHelper{
-		Data: data,
-		Err:  nil,
-	}
-	services, err := getAll(mock,1)
+	rep := initRepository(makeMockRows(data, nil))
+	services, err := rep.getAll(1)
 	var expected []service
 	expected = append(expected, MockServiceStruct(1, "go-pay-service"))
 	expected = append(expected, MockServiceStruct(2, "go-ride-service"))
@@ -57,21 +69,18 @@ func TestGetAllServiceShouldNotReturnErrorWhenDataMoreThanOne(t *testing.T) {
 
 func TestGetAllServiceShouldNotReturnErrorWhenQueryDoesNotReturnData(t *testing.T) {
 	var data []map[string]interface{}
-	mock := &helper.QueryMockHelper{
-		Data: data,
-		Err:  nil,
-	}
-	services, err := getAll(mock,1)
+	rep := initRepository(makeMockRows(data, nil))
+
+	services, err := rep.getAll(1)
 	assert.Empty(t, services)
 	assert.NoError(t, err)
 }
 
 func TestGetAllServiceShouldReturnErrorWhenQueryReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  errors.New("Query Return Error"),
-	}
-	services, err := getAll(mock,1)
+	rep := initRepository(makeMockRows(nil, errors.New("Query Return Error")))
+
+	services, err := rep.getAll(1)
+
 	assert.Nil(t, services)
 	assert.Error(t, err)
 }
@@ -81,13 +90,11 @@ func TestGetAllServiceShouldNotReturnErrorWhenDataNotParseableToStruct(t *testin
 	row := make(map[string]interface{})
 	row["test"] = 1
 	data = append(data, row)
-	mock := &helper.QueryMockHelper{
-		Data: data,
-		Err:  nil,
-	}
+	rep := initRepository(makeMockRows(data, nil))
+
 	var expected []service
 	expected = append(expected, MockServiceStruct(0, ""))
-	services, err := getAll(mock,1)
+	services, err := rep.getAll(1)
 	assert.Equal(t, expected, services)
 	assert.NoError(t, err)
 }
@@ -97,106 +104,119 @@ func TestGetAllServiceShouldReturnErrorWhenDataNotMarshalable(t *testing.T) {
 	row := make(map[string]interface{})
 	row["test"] = make(chan int)
 	data = append(data, row)
-	mock := &helper.QueryMockHelper{
-		Data: data,
-		Err:  nil,
-	}
-	services, err := getAll(mock,1)
+	rep := initRepository(makeMockRows(data, nil))
+
+	services, err := rep.getAll(1)
 	assert.Nil(t, services)
 	assert.Error(t, err)
 }
 
 func TestCreateServiceShouldNotReturnErrorWhenQueryNotReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
-	}
+	rep := initRepository(makeMockRows(nil, nil))
 
-	err := createService(mock, service{Name: "Hello", AuthorizationToken: "World"})
+	err := rep.createService(service{Name: "Hello", AuthorizationToken: "World"})
 	assert.NoError(t, err)
 }
 
 func TestCreateServiceShouldReturnErrorWhenQueryReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  errors.New("This is Error"),
-	}
 
-	err := createService(mock, service{Name: "Hello", AuthorizationToken: "World"})
+	rep := initRepository(makeMockRows(nil, errors.New("This is Error")))
+
+	err := rep.createService(service{Name: "Hello", AuthorizationToken: "World"})
 	assert.Error(t, err)
 }
 
 func TestDeleteServiceShouldNotReturnErrorWhenQueryNotReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
-	}
+	rep := initRepository(makeMockRows(nil, nil))
 
-	err := deleteService(mock, service{Name: "Hello"})
+	err := rep.deleteService(service{Name: "Hello"})
 	assert.NoError(t, err)
 }
 
 func TestFindOneServiceByNameShouldNotReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Err: nil,
-	}
-	var data = make(map[string]interface{})
-	data["id"] = 7
-	data["name"] = "New_Service"
-	data["authorization_token"] = ""
-	data["created_at"] = nil
-	mock.Data = []map[string]interface{}{data}
-	s, err := findOneServiceByName(mock, "Hello")
+
+	var datum = make(map[string]interface{})
+	datum["id"] = 7
+	datum["name"] = "New_Service"
+	datum["authorization_token"] = ""
+	datum["created_at"] = nil
+	data := []map[string]interface{}{datum}
+	rep := initRepository(makeMockRows(data, nil))
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+
+	mock.EXPECT().findOneServiceByName("Hello").Return(&service{Name: "Hello"}, nil)
+	s, err := rep.findOneServiceByName("Hello")
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 }
+
 func TestFindOneServiceByNameShouldReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Err: errors.New("Sample Error"),
-	}
-	s, err := findOneServiceByName(mock, "Hello")
+	rep := initRepository(makeMockRow(nil, errors.New("data error")))
+
+	s, err := rep.findOneServiceByName("Hello")
 	assert.Error(t, err)
 	assert.Empty(t, s)
 }
 
 func TestFindOneServiceByNameShouldReturnErrorWhenDataIsEmpty(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
-	}
-	s, err := findOneServiceByName(mock, "Hello")
+	rep := initRepository(makeMockRows([]map[string]interface{}{}, nil))
+
+	s, err := rep.findOneServiceByName("Hello")
 	assert.Error(t, err)
-	assert.Empty(t, s)
+	assert.Nil(t, s)
 }
 
+func TestFindOneServiceByNameShouldReturnErrorIfDataNotParsable(t *testing.T) {
+	datum := make(map[string]interface{})
+	datum["name"] = errors.New("error")
+	data := []map[string]interface{}{datum}
+
+	rep := initRepository(makeMockRows(data, nil))
+
+	s, err := rep.findOneServiceByName("Hello")
+	assert.Error(t, err)
+	assert.Nil(t, s)
+}
 func TestFindOneServiceByNameShouldReturnErrorIfDataNotMarshalable(t *testing.T) {
 	datum := make(map[string]interface{})
 	datum["test"] = make(chan int)
-	mock := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{datum},
-		Err:  nil,
-	}
-	s, err := findOneServiceByName(mock, "Hello")
+	data := []map[string]interface{}{datum}
+
+	rep := initRepository(makeMockRows(data, errors.New("data error")))
+
+	s, err := rep.findOneServiceByName("Hello")
 	assert.Error(t, err)
 	assert.Nil(t, s)
 }
 
 func TestGetTokenShouldNotReturnError(t *testing.T) {
-	mock := &helper.QueryMockHelper{}
-	var data = make(map[string]interface{})
-	data["authorization_token"] = "asdfsdfa"
-	mock.Data = []map[string]interface{}{data}
-	token, err := getServiceToken(mock, "Hello")
+	var datum = make(map[string]interface{})
+	datum["authorization_token"] = "asdfsdfa"
+	var data []map[string]interface{}
+	data = append(data, datum)
+	rep := initRepository(makeMockRows(data, nil))
+
+	token, err := rep.getServiceToken("Hello")
 	assert.NoError(t, err)
 	assert.Equal(t, "asdfsdfa", token.Token)
 }
 
 func TestGetTokenShouldReturnErrorWhenThereIsNodata(t *testing.T) {
-	mock := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
-	}
-	services, err := getServiceToken(mock, "hello")
+	rep := initRepository(makeMockRows(nil, errors.New("error no data")))
+
+	services, err := rep.getServiceToken("hello")
+	assert.Empty(t, services)
+	assert.Error(t, err)
+}
+
+func TestGetTokenShouldReturnErrorWhenDataNotParsable(t *testing.T) {
+	datum := make(map[string]interface{})
+	datum["authorization_token"] = errors.New("err")
+	data := []map[string]interface{}{datum}
+	rep := initRepository(makeMockRows(data, nil))
+
+	services, err := rep.getServiceToken("hello")
 	assert.Empty(t, services)
 	assert.Error(t, err)
 }
@@ -204,11 +224,44 @@ func TestGetTokenShouldReturnErrorWhenThereIsNodata(t *testing.T) {
 func TestGetTokenShouldReturnErrorWhenDataNotMarshalable(t *testing.T) {
 	datum := make(map[string]interface{})
 	datum["test"] = make(chan int)
-	mock := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{datum},
-		Err:  nil,
-	}
-	services, err := getServiceToken(mock, "hello")
+	var data []map[string]interface{}
+	rep := initRepository(makeMockRows(data, nil))
+
+	services, err := rep.getServiceToken("hello")
 	assert.Empty(t, services)
 	assert.Error(t, err)
+}
+func TestTranslateNameToIdRepositoryShouldReturnErrorOnQuery(t *testing.T) {
+	mock := makeMockRow(nil, errors.New("error data"))
+	rep := initRepository(mock)
+
+	id, err := rep.translateNameToIdRepository("test")
+	assert.Empty(t, id)
+	assert.Error(t, err)
+}
+
+func TestTranslateNameToIdRepositoryShouldNotReturnError(t *testing.T) {
+	datum := make(map[string]interface{})
+	datum["id"] = int64(1)
+	mock := makeMockRow(datum, nil)
+	rep := initRepository(mock)
+
+	id, err := rep.translateNameToIdRepository("test")
+	assert.NotEmpty(t, id)
+	assert.NoError(t, err)
+}
+
+func TestTokenRandomizerDifferentAtLeastAHundredThousandTry(t *testing.T) {
+	var data map[string]bool
+	data = make(map[string]bool)
+	mock := makeMockRow(nil, nil)
+	rep := initRepository(mock)
+	for i := 0; i < 100000; i++ {
+		token := rep.generateToken()
+		if data[token] {
+			t.Fail()
+		} else {
+			data[token] = true
+		}
+	}
 }

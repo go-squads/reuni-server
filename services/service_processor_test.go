@@ -5,55 +5,61 @@ import (
 	"testing"
 
 	"github.com/go-squads/reuni-server/helper"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-
-	context "github.com/go-squads/reuni-server/appcontext"
 )
 
-func TestTokenRandomizerDifferentAtLeastAHundredThousandTry(t *testing.T) {
-	var data map[string]bool
-	data = make(map[string]bool)
-	for i := 0; i < 100000; i++ {
-		token := generateTokenProcessor()
-		if data[token] {
-			t.Fail()
-		} else {
-			data[token] = true
-		}
-	}
-}
-
 func TestCreateServiceProcessorShouldNotReturnError(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service_expected := service{
+		Name:               "test",
+		OrganizationId:     1,
+		AuthorizationToken: "123",
 	}
-	context.InitMockContext(q)
-	serv := servicev{Name: "Hello-World"}
-	err := createServiceProcessor(serv, 1)
+	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().generateToken().Return("123")
+	mock.EXPECT().createService(service_expected).Return(nil)
+
+	serv := servicev{Name: "test"}
+	err := proc.createServiceProcessor(serv, 1)
 	assert.NoError(t, err)
 }
 
 func TestCreateServiceProcessorShouldReturnErrorWhenRepositoryReturnError(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  errors.New("Duplicate key"),
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service_expected := service{
+		Name:               "test",
+		OrganizationId:     1,
+		AuthorizationToken: "123",
 	}
-	context.InitMockContext(q)
-	serv := servicev{Name: "Hello-World"}
-	err := createServiceProcessor(serv, 1)
+	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().generateToken().Return("123")
+	mock.EXPECT().createService(service_expected).Return(errors.New("Duplicate key"))
+
+	serv := servicev{Name: "test"}
+	err := proc.createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 }
 
 func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testing.T) {
-
-	q := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  nil,
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service_expected := service{
+		Name:               "test",
+		OrganizationId:     1,
+		AuthorizationToken: "123",
 	}
-	context.InitMockContext(q)
+	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().generateToken().Return("123")
+	mock.EXPECT().createService(service_expected).Return(nil)
+
 	serv := servicev{}
-	err := createServiceProcessor(serv, 1)
+	err := proc.createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 	httpErr, ok := err.(*helper.HttpError)
 	assert.True(t, ok)
@@ -61,14 +67,20 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testin
 }
 
 func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsDuplicate(t *testing.T) {
-
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{MockServiceMap(1, "test")},
-		Err:  nil,
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service_expected := service{
+		Name:               "test",
+		OrganizationId:     1,
+		AuthorizationToken: "123",
 	}
-	context.InitMockContext(q)
-	serv := servicev{Name: "Hello World"}
-	err := createServiceProcessor(serv, 1)
+	mock.EXPECT().findOneServiceByName("test").Return(&service_expected, nil)
+	mock.EXPECT().generateToken().Return("123")
+	mock.EXPECT().createService(service_expected).Return(nil)
+
+	serv := servicev{Name: "test"}
+	err := proc.createServiceProcessor(serv, 1)
 	assert.Error(t, err)
 	httpErr, ok := err.(*helper.HttpError)
 	assert.True(t, ok)
@@ -76,92 +88,149 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsDuplicate(t *te
 }
 
 func TestDeleteServiceProcessorShouldNotReturnError(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{MockServiceMap(1, "test")},
-		Err:  nil,
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service := service{
+		Name: "test",
 	}
-	context.InitMockContext(q)
-	serv := servicev{Name: "Hello World"}
-	err := deleteServiceProcessor(serv)
+	mock.EXPECT().deleteService(service).Return(nil)
+	serv := servicev{Name: "test"}
+	err := proc.deleteServiceProcessor(serv)
 	assert.NoError(t, err)
 }
+
 func TestDeleteServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{MockServiceMap(1, "test")},
-		Err:  nil,
-	}
-	context.InitMockContext(q)
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	service := service{}
+	mock.EXPECT().deleteService(service).Return(nil)
+
 	serv := servicev{}
-	err := deleteServiceProcessor(serv)
+	err := proc.deleteServiceProcessor(serv)
 	assert.Error(t, err)
 }
 
 func TestValidateTokenProcessorShouldNotReturnError(t *testing.T) {
-	data := make(map[string]interface{})
-	data["authorization_token"] = "123"
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{data},
-		Err:  nil,
-	}
-	context.InitMockContext(q)
-	serv := servicev{
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(serv.Name, "123")
+	serviceToken_expected := &serviceToken{
+		Token: "123",
+	}
+	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, nil)
+	res, err := proc.ValidateTokenProcessor(serv.Name, "123")
 	assert.True(t, res)
 	assert.NoError(t, err)
 }
 
 func TestValidateTokenProcessorShouldNotReturnErrorWhenTokenIsNotValid(t *testing.T) {
-	data := make(map[string]interface{})
-	data["authorization_token"] = "123"
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{data},
-		Err:  nil,
-	}
-	context.InitMockContext(q)
-	serv := servicev{
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(serv.Name, "155")
+	serviceToken_expected := &serviceToken{
+		Token: "123",
+	}
+	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, nil)
+
+	res, err := proc.ValidateTokenProcessor(serv.Name, "155")
 	assert.False(t, res)
 	assert.NoError(t, err)
 }
 
 func TestValidateTokenProcessorShouldReturnErrorWhenTokenIsNil(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{nil},
-		Err:  errors.New("Test Error"),
-	}
-	context.InitMockContext(q)
-	serv := servicev{
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(serv.Name, "155")
+	serviceToken_expected := &serviceToken{
+		Token: "",
+	}
+	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, errors.New("token is nil"))
+	res, err := proc.ValidateTokenProcessor(serv.Name, "")
 	assert.False(t, res)
 	assert.Error(t, err)
 }
 
 func TestFindOneServiceByNameWithContextShouldReturnError(t *testing.T) {
-	q := &helper.QueryMockHelper{
-		Data: nil,
-		Err:  errors.New("Test Error"),
-	}
-	context.InitMockContext(q)
-	service, err := FindOneServiceByName("test")
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error data"))
+
+	service, err := proc.FindOneServiceByName("test")
 	assert.Nil(t, service)
 	assert.Error(t, err)
 }
 
 func TestFindOneServiceByNameWithContextShouldNotReturnError(t *testing.T) {
 
-	q := &helper.QueryMockHelper{
-		Data: []map[string]interface{}{MockServiceMap(1, "test-service")},
-		Err:  nil,
-	}
-	context.InitMockContext(q)
-	service, err := FindOneServiceByName("test")
-	assert.Equal(t, service.Name, "test-service")
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().findOneServiceByName("test").Return(&service{Id: 1, Name: "test"}, nil)
+
+	service, err := proc.FindOneServiceByName("test")
+	assert.Equal(t, service.Name, "test")
 	assert.Equal(t, service.Id, 1)
 	assert.NoError(t, err)
+}
+
+func TestTranslateNameToIdWithContextShouldReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().translateNameToIdRepository("test").Return(0, errors.New("error data"))
+
+	id, err := proc.TranslateNameToIdProcessor("test")
+	assert.Equal(t, 0, id)
+	assert.Error(t, err)
+}
+
+func TestTranslateNameToIdWithContextShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().translateNameToIdRepository("test").Return(1, nil)
+
+	id, err := proc.TranslateNameToIdProcessor("test")
+	assert.Equal(t, id, 1)
+	assert.NoError(t, err)
+}
+
+func TestGetAllServiceShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().getAll(1).Return([]service{}, nil)
+
+	services, err := proc.getAllServicesBasedOnOrganizationProcessor(1)
+	assert.NotNil(t, services)
+	assert.NoError(t, err)
+}
+
+func TestGetAllServiceShouldReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceRepositoryInterface(ctrl)
+	proc := serviceProcessor{repo: mock}
+
+	mock.EXPECT().getAll(1).Return(nil, errors.New("error"))
+
+	services, err := proc.getAllServicesBasedOnOrganizationProcessor(1)
+	assert.Nil(t, services)
+	assert.Error(t, err)
 }

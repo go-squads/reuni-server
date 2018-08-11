@@ -6,20 +6,18 @@ import (
 	"net/http"
 
 	"github.com/go-squads/reuni-server/appcontext"
-
 	"github.com/go-squads/reuni-server/helper"
-
-	context "github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/response"
 	"github.com/gorilla/mux"
 )
 
-func getUsername(r *http.Request) string {
-	usr := r.Context().Value("username")
-	if usr != nil {
-		return usr.(string)
+var proc serviceProcessorInterface
+
+func getProcessor() serviceProcessorInterface {
+	if proc == nil {
+		proc = &serviceProcessor{repo: initRepository(appcontext.GetHelper())}
 	}
-	return ""
+	return proc
 }
 
 func getFromContext(r *http.Request, key string) string {
@@ -36,14 +34,14 @@ func toString(obj interface{}) string {
 
 func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
 	organizationName := mux.Vars(r)["organization_name"]
-	organizationId, err := translateNameToIdRepository(appcontext.GetHelper(), organizationName)
+	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
 	if err != nil {
-		response.ResponseError("GetAllService", getUsername(r), w, err)
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
-	services, err := getAll(context.GetHelper(), organizationId)
+	services, err := getProcessor().getAllServicesBasedOnOrganizationProcessor(organizationId)
 	if err != nil {
-		response.ResponseError("GetAllService", getUsername(r), w, err)
+		response.ResponseError("GetAllService", getFromContext(r, "username"), w, err)
 		return
 	}
 	if len(services) == 0 {
@@ -57,20 +55,20 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 	var servicedata servicev
 	err := json.NewDecoder(r.Body).Decode(&servicedata)
 	if err != nil {
-		response.ResponseError("CreateService", getUsername(r), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
 	defer r.Body.Close()
 	organizationName := mux.Vars(r)["organization_name"]
-	organizationId, err := translateNameToIdRepository(appcontext.GetHelper(), organizationName)
+	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
 	if err != nil {
-		response.ResponseError("CreateService", getUsername(r), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
-	servicedata.CreatedBy = getUsername(r)
-	err = createServiceProcessor(servicedata, organizationId)
+	servicedata.CreatedBy = getFromContext(r, "username")
+	err = getProcessor().createServiceProcessor(servicedata, organizationId)
 	if err != nil {
-		response.ResponseError("CreateService", getUsername(r), w, err)
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, err)
 		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
@@ -82,13 +80,13 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if err != nil {
-		response.ResponseError("DeleteServiceHandler", getUsername(r), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		response.ResponseError("DeleteServiceHandler", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
 
-	err = deleteServiceProcessor(servicedata)
+	err = getProcessor().deleteServiceProcessor(servicedata)
 	if err != nil {
-		response.ResponseError("DeleteServiceHandler", getUsername(r), w, err)
+		response.ResponseError("DeleteServiceHandler", getFromContext(r, "username"), w, err)
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentText, "200 OK")
@@ -97,9 +95,9 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["service_name"]
 	token := r.Header.Get("Authorization")
-	result, err := ValidateTokenProcessor(serviceName, token)
+	result, err := getProcessor().ValidateTokenProcessor(serviceName, token)
 	if err != nil {
-		response.ResponseError("ValidateToken", getUsername(r), w, err)
+		response.ResponseError("ValidateToken", getFromContext(r, "username"), w, err)
 		return
 	}
 	if result {
@@ -113,7 +111,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 func GetToken(w http.ResponseWriter, r *http.Request) {
 	serviceName := mux.Vars(r)["service_name"]
-	token, err := getServiceToken(context.GetHelper(), serviceName)
+	token, err := initRepository(appcontext.GetHelper()).getServiceToken(serviceName)
 	if err != nil {
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 	}
