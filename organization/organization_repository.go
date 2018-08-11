@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/go-squads/reuni-server/helper"
+		"net/http"
 )
 
 type repository interface {
@@ -39,7 +40,7 @@ func initRepository(execer helper.QueryExecuter) *mainRepository {
 func (s *mainRepository) createNewOrganization(organizationName string) (int64, error) {
 	data, err := s.execer.DoQueryRow(createNewOrganizationQuery, organizationName)
 	if err != nil {
-		return 0, err
+		return 0, helper.NewHttpError(http.StatusConflict, "Already Exists")
 	}
 	id, ok := data["id"].(int64)
 	if !ok {

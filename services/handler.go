@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/appcontext"
@@ -19,9 +20,15 @@ func getUsername(r *http.Request) string {
 		return usr.(string)
 	}
 	return ""
-
 }
 
+func getFromContext(r *http.Request, key string) string {
+	data := r.Context().Value(key)
+	if data == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", data)
+}
 func toString(obj interface{}) string {
 	js, _ := json.Marshal(obj)
 	return string(js)
@@ -31,7 +38,7 @@ func GetAllServicesHandler(w http.ResponseWriter, r *http.Request) {
 	organizationName := mux.Vars(r)["organization_name"]
 	organizationId, err := translateNameToIdRepository(appcontext.GetHelper(), organizationName)
 	if err != nil {
-		response.ResponseError("GetAllService", getUsername(r),w,err)
+		response.ResponseError("GetAllService", getUsername(r), w, err)
 		return
 	}
 	services, err := getAll(context.GetHelper(), organizationId)
@@ -60,6 +67,7 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError("CreateService", getUsername(r), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
+	servicedata.CreatedBy = getUsername(r)
 	err = createServiceProcessor(servicedata, organizationId)
 	if err != nil {
 		response.ResponseError("CreateService", getUsername(r), w, err)

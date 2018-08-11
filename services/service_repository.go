@@ -5,16 +5,16 @@ import (
 )
 
 const (
-	getAllServicesQuery       = "SELECT id,name,created_at FROM services WHERE organization_id = $1"
-	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token) VALUES ($1,$2,$3)"
+	getAllServicesQuery       = "SELECT id,name,created_at,created_by FROM services WHERE organization_id = $1"
+	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token, created_by) VALUES ($1,$2,$3,$4)"
 	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
-	findOneServiceByNameQuery = "SELECT id, name, created_at FROM services WHERE name = $1"
+	findOneServiceByNameQuery = "SELECT id, name, created_by FROM services WHERE name = $1"
 	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
 	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
 
 func getAll(q helper.QueryExecuter, organizationId int) ([]service, error) {
-	data, err := q.DoQuery(getAllServicesQuery,organizationId)
+	data, err := q.DoQuery(getAllServicesQuery, organizationId)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func getAll(q helper.QueryExecuter, organizationId int) ([]service, error) {
 }
 
 func createService(q helper.QueryExecuter, servicestore service) error {
-	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken)
+	_, err := q.DoQuery(createServiceQuery, servicestore.Name, servicestore.OrganizationId, servicestore.AuthorizationToken, servicestore.CreatedBy)
 	return err
 }
 

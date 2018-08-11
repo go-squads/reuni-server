@@ -12,6 +12,7 @@ func createServiceProcessor(servicedata servicev, organizationId int) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
 	serviceStore.OrganizationId = organizationId
+	serviceStore.CreatedBy = servicedata.CreatedBy
 	if serviceStore.Name == "" {
 		return helper.NewHttpError(400, "Service name not defined")
 	}
