@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/go-squads/reuni-server/appcontext"
+	"github.com/go-squads/reuni-server/helper"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -132,4 +134,85 @@ func TestGetAllMemberOfOrganizationProcessorShouldReturnError(t *testing.T) {
 	data, err := proc.getAllMemberOfOrganizationProcessor(int64(1))
 	assert.Error(t, err)
 	assert.Nil(t, data)
+}
+
+func TestGetAllOrganizationProcessorShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	proc := mainProcessor{repo: mock}
+	mock.EXPECT().getAllOrganization(1).Return([]OrganizationMember{}, nil)
+	data, err := proc.getAllOrganizationProcessor(1)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestGetAllOrganizationProcessorShouldReturnErrorWhenQueryError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	proc := mainProcessor{repo: mock}
+	mock.EXPECT().getAllOrganization(1).Return(nil, errors.New("internal error"))
+	data, err := proc.getAllOrganizationProcessor(1)
+	assert.Error(t, err)
+	assert.Empty(t, data)
+}
+func TestGetAllOrganizationProcessorShouldNotReturnErrorWhenQueryReturnEmpty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	proc := mainProcessor{repo: mock}
+	mock.EXPECT().getAllOrganization(1).Return(nil, nil)
+	data, err := proc.getAllOrganizationProcessor(1)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestTranslateNameToIdProcShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	proc := mainProcessor{repo: mock}
+	mock.EXPECT().translateNameToIdRepository("test").Return(1, nil)
+	data, err := proc.translateNameToIdProcessor("test")
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestTranslateNameToIdProcShouldReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockrepository(ctrl)
+
+	proc := mainProcessor{repo: mock}
+	mock.EXPECT().translateNameToIdRepository("test").Return(0, errors.New(""))
+	data, err := proc.translateNameToIdProcessor("test")
+	assert.Error(t, err)
+	assert.Empty(t, data)
+}
+
+func TestTranslateNameToIdProcWithoutReceiverShouldNotReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Row: map[string]interface{}{
+			"id": int64(1),
+		},
+		Err: nil,
+	}
+	appcontext.InitMockContext(q)
+
+	data, err := TranslateNameToIdProcessor(q, "test")
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestTranslateNameToIdProcWithoutReceiverShouldReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Row: map[string]interface{}{
+			"id": int64(0),
+		},
+		Err: errors.New("error"),
+	}
+	appcontext.InitMockContext(q)
+	data, err := TranslateNameToIdProcessor(q, "test")
+	assert.Error(t, err)
+	assert.Empty(t, data)
 }

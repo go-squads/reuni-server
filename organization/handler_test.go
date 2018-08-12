@@ -184,6 +184,31 @@ func TestAddUserShouldReturnErrorWhenDataMemberIsNotValid(t *testing.T) {
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
+
+func TestAddUserShouldReturnErrorWhenNameCantBeTranslated(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"user_id": 1,
+			"role": "ooa"
+		}
+	`
+	mock.EXPECT().translateNameToIdProcessor("test").Return(0, errors.New("name cant be translated"))
+	member := &Member{
+		OrgId:  int64(1),
+		UserId: int64(1),
+		Role:   "ooa",
+	}
+	mock.EXPECT().addUserProcessor(member).Return(errors.New("Internal error"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/organization/test/member", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{organization_name}/member", AddUserHandler).Methods("POST")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
 func TestAddUserShouldReturn201WhenAddSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
@@ -403,6 +428,20 @@ func TestGetAllMemberOfOrganizationShouldReturnErrorWhenOrgIdIsNotValid(t *testi
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
+func TestGetAllMemberOfOrganizationShouldReturnErrorWhenNameCantBeTranslated(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	mock.EXPECT().translateNameToIdProcessor("test").Return(0, errors.New("name cant be translated"))
+	mock.EXPECT().getAllMemberOfOrganizationProcessor(int64(1)).Return(nil, nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization/test/member", strings.NewReader(""))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization/{organization_name}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
 func TestGetAllMemberOfOrganizationShouldReturn200OK(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
@@ -414,5 +453,61 @@ func TestGetAllMemberOfOrganizationShouldReturn200OK(t *testing.T) {
 	r := mux.NewRouter()
 	r.HandleFunc("/organization/{organization_name}/member", GetAllMemberOfOrganizationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetAllOrganizationShouldReturnErrorWhenInputIsWrong(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"role": "Auditor"
+		}
+	`
+	mock.EXPECT().getAllOrganizationProcessor(1).Return("org", nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization", GetAllHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestGetAllOrganizationHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"user_id": 1,
+			"role": "Auditor"
+		}
+	`
+	mock.EXPECT().getAllOrganizationProcessor(1).Return("", errors.New("error"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization", GetAllHandler).Methods("GET")
+	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "userId", 1)))
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestGetAllOrganizationHandlerShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockprocessor(ctrl)
+	proc = mock
+	payload := `
+		{
+			"user_id": 1,
+			"role": "Auditor"
+		}
+	`
+	mock.EXPECT().getAllOrganizationProcessor(1).Return("test", nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/organization", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/organization", GetAllHandler).Methods("GET")
+	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "userId", 1)))
 	assert.Equal(t, http.StatusOK, rr.Code)
 }

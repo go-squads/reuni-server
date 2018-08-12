@@ -61,10 +61,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	var member Member
 	organizationName := mux.Vars(r)["organization_name"]
 	organizationId, err := getProcessor().translateNameToIdProcessor(organizationName)
-	if err != nil {
-		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
-		return
-	}
+
 	if err != nil {
 		response.ResponseError("AddUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return

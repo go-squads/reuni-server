@@ -93,3 +93,46 @@ func TestGetAllMemberOfOrganizationShouldReturnError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, data)
 }
+
+func TestGetAllOrganizationShouldNotReturnError(t *testing.T) {
+	rep := initRepository(makeMockRows([]map[string]interface{}{}, nil))
+	data, err := rep.getAllOrganization(1)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+}
+
+func TestGetAllOrganizationShouldReturnErrorWhenDataNotParsable(t *testing.T) {
+	var data_expected []map[string]interface{}
+	datum := make(map[string]interface{})
+	datum["name"] = errors.New("error")
+	data_expected = append(data_expected, datum)
+	rep := initRepository(makeMockRows(data_expected, nil))
+	data, err := rep.getAllOrganization(1)
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}
+
+func TestGetAllOrganizationShouldReturnErrorWhenQueryError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("Internal error")))
+	data, err := rep.getAllOrganization(1)
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}
+
+func TestTranslateNameToIdShouldNotReturnError(t *testing.T) {
+	datum := make(map[string]interface{})
+	datum["id"] = int64(1)
+	rep := initRepository(makeMockRow(datum, nil))
+	data, err := rep.translateNameToIdRepository("test")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, data)
+}
+
+func TestTranslateNameToIdShouldReturnErrorWhenQueryError(t *testing.T) {
+	datum := make(map[string]interface{})
+	datum["id"] = int64(1)
+	rep := initRepository(makeMockRow(datum, errors.New("error")))
+	data, err := rep.translateNameToIdRepository("test")
+	assert.Error(t, err)
+	assert.Empty(t, data)
+}
