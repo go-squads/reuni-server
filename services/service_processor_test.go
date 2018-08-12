@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/helper"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -161,6 +162,54 @@ func TestValidateTokenProcessorShouldReturnErrorWhenTokenIsNil(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestValidateTokenProcessorWithoutReceiverShouldNotReturnError(t *testing.T) {
+	data := make(map[string]interface{})
+	data["authorization_token"] = "123"
+	q := &helper.QueryMockHelper{
+		Data: []map[string]interface{}{data},
+		Err:  nil,
+	}
+	appcontext.InitMockContext(q)
+	serv := &servicev{
+		Name: "test",
+	}
+	res, err := ValidateTokenProcessor(q, serv.Name, "123")
+	assert.True(t, res)
+	assert.NoError(t, err)
+}
+
+func TestValidateTokenProcessorWithoutReceiverShouldNotReturnErrorWhenTokenIsNotValid(t *testing.T) {
+	data := make(map[string]interface{})
+	data["authorization_token"] = "123"
+	q := &helper.QueryMockHelper{
+		Data: []map[string]interface{}{data},
+		Err:  nil,
+	}
+	appcontext.InitMockContext(q)
+	serv := &servicev{
+		Name: "test",
+	}
+	res, err := ValidateTokenProcessor(q, serv.Name, "155")
+	assert.False(t, res)
+	assert.NoError(t, err)
+}
+
+func TestValidateTokenProcessorWithoutProcessorShouldReturnErrorWhenTokenIsNil(t *testing.T) {
+	data := make(map[string]interface{})
+	data["authorization_token"] = nil
+	q := &helper.QueryMockHelper{
+		Data: []map[string]interface{}{data},
+		Err:  errors.New("token is nil"),
+	}
+	appcontext.InitMockContext(q)
+	serv := &servicev{
+		Name: "test",
+	}
+	res, err := ValidateTokenProcessor(q, serv.Name, "")
+	assert.False(t, res)
+	assert.Error(t, err)
+}
+
 func TestFindOneServiceByNameWithContextShouldReturnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceRepositoryInterface(ctrl)
@@ -187,6 +236,31 @@ func TestFindOneServiceByNameWithContextShouldNotReturnError(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestFindOneServiceByNameWithoutReceiverWithContextShouldReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Data: nil,
+		Err:  errors.New("Test Error"),
+	}
+	appcontext.InitMockContext(q)
+
+	service, err := FindOneServiceByName(q, "test")
+	assert.Nil(t, service)
+	assert.Error(t, err)
+}
+
+func TestFindOneServiceByNameWithoutReceiverWithContextShouldNotReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Data: []map[string]interface{}{MockServiceMap(1, "test")},
+		Err:  nil,
+	}
+	appcontext.InitMockContext(q)
+
+	service, err := FindOneServiceByName(q, "test")
+	assert.Equal(t, service.Name, "test")
+	assert.Equal(t, service.Id, 1)
+	assert.NoError(t, err)
+}
+
 func TestTranslateNameToIdWithContextShouldReturnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceRepositoryInterface(ctrl)
@@ -207,6 +281,32 @@ func TestTranslateNameToIdWithContextShouldNotReturnError(t *testing.T) {
 	mock.EXPECT().translateNameToIdRepository("test").Return(1, nil)
 
 	id, err := proc.TranslateNameToIdProcessor("test")
+	assert.Equal(t, id, 1)
+	assert.NoError(t, err)
+}
+
+func TestTranslateNameToIdWithoutReceiverWithContextShouldReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Data: nil,
+		Err:  errors.New("Test Error"),
+	}
+	appcontext.InitMockContext(q)
+
+	id, err := TranslateNameToIdProcessor(q, "test")
+	assert.Equal(t, 0, id)
+	assert.Error(t, err)
+}
+
+func TestTranslateNameToIdWithoutReceiverWithContextShouldNotReturnError(t *testing.T) {
+	q := &helper.QueryMockHelper{
+		Row: map[string]interface{}{
+			"id": int64(1),
+		},
+		Err: nil,
+	}
+	appcontext.InitMockContext(q)
+
+	id, err := TranslateNameToIdProcessor(q, "test")
 	assert.Equal(t, id, 1)
 	assert.NoError(t, err)
 }

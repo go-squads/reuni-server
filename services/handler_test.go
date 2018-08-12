@@ -26,6 +26,22 @@ func TestToString(t *testing.T) {
 	assert.Equal(t, string(expected), res)
 }
 
+func TestGetAllHandlerShouldReturnOK(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+	services := []service{}
+	services = append(services, service{Id: 1, Name: "test"})
+
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().getAllServicesBasedOnOrganizationProcessor(1).Return(services, nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test/services", strings.NewReader(""))
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/services", GetAllServicesHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
 func TestGetAllHandlerShouldNotPanic(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceProcessorInterface(ctrl)
