@@ -48,7 +48,7 @@ func withAuthorizator(next http.HandlerFunc, permission rune) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := authorizator.New(appcontext.GetHelper())
 		serviceName := mux.Vars(r)["service_name"]
-		service, err := services.FindOneServiceByName(serviceName)
+		service, err := services.FindOneServiceByName(appcontext.GetHelper(), serviceName)
 		if err != nil {
 			response.ResponseError("AuthorizatorMiddleware", "", w, helper.NewHttpError(http.StatusNotFound, "Not Found"))
 			return
@@ -91,7 +91,7 @@ func validateAgentTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		serviceName := mux.Vars(r)["service_name"]
-		res, err := services.ValidateTokenProcessor(serviceName, token)
+		res, err := services.ValidateTokenProcessor(appcontext.GetHelper(), serviceName, token)
 		if err != nil {
 			response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 			return

@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/go-squads/reuni-server/services"
-
 	"github.com/go-squads/reuni-server/helper"
 )
 
@@ -29,6 +27,7 @@ const (
 	createNewVersionQuery             = "INSERT INTO configurations(service_id, namespace, version, config_store) VALUES($1,$2,$3,$4)"
 	updateNamespaceActiveVersionQuery = "UPDATE namespaces SET active_version=$1 WHERE service_id=$2 AND namespace=$3"
 	getVersionsQuery                  = "SELECT version FROM configurations WHERE service_id=$1 AND namespace=$2"
+	findServiceIdFromName             = "SELECT id FROM services WHERE name=$1"
 )
 
 func (s *mainRepository) getConfiguration(serviceId int, namespace string, version int) (*configView, error) {
@@ -97,9 +96,13 @@ func (s *mainRepository) getVersions(serviceId int, namespace string) ([]int, er
 }
 
 func (s *mainRepository) getServiceId(serviceName string) (int, error) {
-	ret, err := services.FindOneServiceByName(serviceName)
+	ret, err := s.execer.DoQueryRow(findServiceIdFromName, serviceName)
 	if err != nil {
 		return 0, err
 	}
-	return ret.Id, nil
+	res, ok := ret["id"].(int)
+	if !ok {
+		return 0, helper.NewHttpError(http.StatusNotFound, "Not Found")
+	}
+	return res, nil
 }

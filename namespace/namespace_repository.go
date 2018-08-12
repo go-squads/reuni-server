@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/go-squads/reuni-server/services"
+	"net/http"
 
 	"github.com/go-squads/reuni-server/helper"
 )
@@ -14,6 +13,7 @@ const createNewNamespaceQuery = "INSERT INTO namespaces(service_id, namespace) V
 const createNewConfigurationsQuery = "INSERT INTO configurations(service_id, namespace, config_store) VALUES ($1,$2,$3)"
 const retrieveAllNamespaceQuery = "SELECT id,namespace,active_version as version FROM namespaces WHERE service_id = $1"
 const countNamespaceNameByService = "SELECT count(namespace) as count FROM namespaces WHERE service_id=$1 AND namespace=$2"
+const findServiceIdFromName = "SELECT id FROM services WHERE name=$1"
 
 type namespaceRepositoryInterface interface {
 	isNamespaceExist(service_id int, namespace string) (bool, error)
@@ -75,9 +75,13 @@ func (s *namespaceRepository) retrieveAllNamespace(service_id int) ([]namespaceS
 	return namespaces, nil
 }
 func (s *namespaceRepository) getServiceId(serviceName string) (int, error) {
-	ret, err := services.FindOneServiceByName(serviceName)
+	ret, err := s.execer.DoQueryRow(findServiceIdFromName, serviceName)
 	if err != nil {
 		return 0, err
 	}
-	return ret.Id, nil
+	res, ok := ret["id"].(int)
+	if !ok {
+		return 0, helper.NewHttpError(http.StatusNotFound, "Not Found")
+	}
+	return res, nil
 }

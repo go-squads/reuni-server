@@ -54,12 +54,32 @@ func (p *serviceProcessor) ValidateTokenProcessor(serviceName string, inputToken
 	}
 }
 
+func ValidateTokenProcessor(q helper.QueryExecuter, serviceName string, inputToken string) (bool, error) {
+	token, err := initRepository(q).getServiceToken(serviceName)
+	if err != nil {
+		return false, err
+	}
+	if token.Token == inputToken {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 func (p *serviceProcessor) FindOneServiceByName(name string) (*service, error) {
 	return p.repo.findOneServiceByName(name)
 }
 
 func (p *serviceProcessor) TranslateNameToIdProcessor(name string) (int, error) {
 	return p.repo.translateNameToIdRepository(name)
+}
+
+func FindOneServiceByName(q helper.QueryExecuter, name string) (*service, error) {
+	return initRepository(q).findOneServiceByName(name)
+}
+
+func TranslateNameToIdProcessor(q helper.QueryExecuter, name string) (int, error) {
+	return initRepository(q).translateNameToIdRepository(name)
 }
 
 func (p *serviceProcessor) getAllServicesBasedOnOrganizationProcessor(organizationId int) ([]service, error) {
