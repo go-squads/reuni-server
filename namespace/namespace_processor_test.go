@@ -140,3 +140,14 @@ func TestGetAllNamespaceProcessorShouldReturnErrorWhenRepositoryReturnError(t *t
 	assert.Error(t, err)
 	assert.Nil(t, res)
 }
+
+func TestGetAllNamespaceProcessorShouldReturnEmptyArrayWhenRetrieveReturnNil(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockNamespaceRepository(ctrl)
+	procs := mainProcessor{repo: mock}
+	mock.EXPECT().getServiceId("test-service").Return(1, nil)
+	mock.EXPECT().retrieveAllNamespace(1).Return(nil, nil)
+	res, err := procs.retrieveAllNamespaceProcessor("test-service")
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+}

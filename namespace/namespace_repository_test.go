@@ -156,3 +156,14 @@ func TestGetServiceIdShouldReturnErrorWhenNoData(t *testing.T) {
 	assert.Empty(t, res)
 
 }
+
+func TestGetServiceIdShouldReturnErrorWhenQueryError(t *testing.T) {
+	rep := initRepository(makeMockRow(nil, errors.New("error")))
+	appcontext.InitMockContext(
+		rep.execer,
+	)
+	res, err := rep.getServiceId("test-service2")
+	assert.Error(t, err)
+	assert.Empty(t, res)
+
+}
