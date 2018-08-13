@@ -8,10 +8,18 @@ import (
 	"net/http"
 
 	"github.com/go-squads/reuni-server/appcontext"
-
 	"github.com/go-squads/reuni-server/authenticator"
 	"github.com/go-squads/reuni-server/response"
 )
+
+var proc userProcessorInterface
+
+func getProcessor() userProcessorInterface {
+	if proc == nil {
+		proc = &userProcessor{repo: initRepository(appcontext.GetHelper())}
+	}
+	return proc
+}
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userdata userv
@@ -23,8 +31,13 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
 		return
 	}
+	userdata.Password = getProcessor().createUserEncryptPassword(userdata.Username, userdata.Password)
+	if userdata.Password == "" {
+		response.RespondWithError(w, http.StatusInternalServerError, response.ContentJson, "error encrypting password")
+		return
+	}
 
-	err = createUserProcessor(userdata)
+	err = getProcessor().createUserProcessor(userdata)
 	if err != nil {
 		log.Println("CreateUserHandler: " + err.Error())
 		response.RespondWithError(w, http.StatusConflict, response.ContentJson, "error writing to database")
@@ -37,14 +50,17 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var logindata userv
 	err := json.NewDecoder(r.Body).Decode(&logindata)
 	defer r.Body.Close()
-
-	logindata.Password = createUserEncryptPassword(logindata.Username, logindata.Password)
 	if err != nil {
 		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
 		return
 	}
+	logindata.Password = getProcessor().createUserEncryptPassword(logindata.Username, logindata.Password)
+	if logindata.Password == "" {
+		response.RespondWithError(w, http.StatusInternalServerError, response.ContentJson, "error encrypting password")
+		return
+	}
 
-	userData, err := loginUser(logindata)
+	userData, err := getProcessor().loginUserProcessor(logindata)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

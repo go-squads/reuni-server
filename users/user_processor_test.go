@@ -1,0 +1,69 @@
+package users
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetRepository(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+
+	assert.NotNil(t, proc.getRepository())
+}
+
+func TestCreateUserEncryptPassword(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+
+	assert.NotNil(t, proc.createUserEncryptPassword("username", "password"))
+}
+
+func TestCreateUserProcessorShouldReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().createUser(user{Name: "test", Username: "test", Email: "test", Password: "123hash"}).Return(nil)
+	err := proc.createUserProcessor(userv{Name: "test", Username: "test", Email: "test", Password: "123hash"})
+	assert.NoError(t, err)
+}
+
+func TestCreateUserProcessorShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().createUser(user{Name: "test", Username: "test", Email: "test", Password: "123hash"}).Return(errors.New("internal error"))
+	err := proc.createUserProcessor(userv{Name: "test", Username: "test", Email: "test", Password: "123hash"})
+	assert.Error(t, err)
+}
+
+func TestLoginUserProcessorShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return([]byte{}, nil)
+
+	data, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
+	assert.NotNil(t, data)
+	assert.NoError(t, err)
+}
+
+func TestLoginUserProcessorShouldReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return(nil, errors.New("error login"))
+
+	data, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
+	assert.Nil(t, data)
+	assert.Error(t, err)
+}
