@@ -145,7 +145,7 @@ func TestGetServiceIdShouldReturnErrorWhenIdNotFound(t *testing.T) {
 
 func TestGetServiceIdShouldNotReturnError(t *testing.T) {
 	data := make(map[string]interface{})
-	data["id"] = 1
+	data["id"] = int64(1)
 	rep := initRepository(makeMockRow(data, nil))
 	serviceId, err := rep.getServiceId("test-services")
 	assert.NotNil(t, serviceId)

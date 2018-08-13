@@ -136,7 +136,7 @@ func TestRetrieveAllNamespaceShouldReturnErrorWhenQueryReturnResultThatCannotBeP
 }
 
 func TestGetServiceIdShouldReturnId(t *testing.T) {
-	rep := initRepository(makeMockRow(map[string]interface{}{"id": 2}, nil))
+	rep := initRepository(makeMockRow(map[string]interface{}{"id": int64(2)}, nil))
 	appcontext.InitMockContext(
 		rep.execer,
 	)

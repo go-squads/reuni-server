@@ -79,9 +79,9 @@ func (s *namespaceRepository) getServiceId(serviceName string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	res, ok := ret["id"].(int)
+	res, ok := ret["id"].(int64)
 	if !ok {
 		return 0, helper.NewHttpError(http.StatusNotFound, "Not Found")
 	}
-	return res, nil
+	return int(res), nil
 }
