@@ -11,7 +11,7 @@ import (
 
 const createNewNamespaceQuery = "INSERT INTO namespaces(service_id, namespace) VALUES ($1,$2)"
 const createNewConfigurationsQuery = "INSERT INTO configurations(service_id, namespace, config_store) VALUES ($1,$2,$3)"
-const retrieveAllNamespaceQuery = "SELECT id,namespace,active_version as version FROM namespaces WHERE service_id = $1"
+const retrieveAllNamespaceQuery = "SELECT id,namespace,active_version,created_at,updated_at,created_by as version FROM namespaces WHERE service_id = $1"
 const countNamespaceNameByService = "SELECT count(namespace) as count FROM namespaces WHERE service_id=$1 AND namespace=$2"
 const findServiceIdFromName = "SELECT id FROM services WHERE name=$1"
 
