@@ -34,6 +34,7 @@ func (s *mainProcessor) createNewNamespaceProcessor(serviceName string, namespac
 	}
 	var namespaceStore namespaceStore
 	err = s.parseData(serviceId, namespacev, &namespaceStore)
+	namespaceStore.CreatedBy = namespacev.CreatedBy
 	if err != nil {
 		return err
 	}

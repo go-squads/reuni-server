@@ -32,6 +32,7 @@ func getFromContext(r *http.Request, key string) string {
 
 func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var namespaceData namespaceView
+	namespaceData.CreatedBy = getFromContext(r, "username")
 	var serviceName = mux.Vars(r)["service_name"]
 	err := json.NewDecoder(r.Body).Decode(&namespaceData)
 	if err != nil {

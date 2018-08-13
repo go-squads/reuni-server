@@ -9,9 +9,9 @@ import (
 	"github.com/go-squads/reuni-server/helper"
 )
 
-const createNewNamespaceQuery = "INSERT INTO namespaces(service_id, namespace) VALUES ($1,$2)"
+const createNewNamespaceQuery = "INSERT INTO namespaces(service_id, namespace,created_by) VALUES ($1,$2,$3)"
 const createNewConfigurationsQuery = "INSERT INTO configurations(service_id, namespace, config_store) VALUES ($1,$2,$3)"
-const retrieveAllNamespaceQuery = "SELECT id,namespace,active_version,created_at,updated_at,created_by as version FROM namespaces WHERE service_id = $1"
+const retrieveAllNamespaceQuery = "SELECT id,namespace,active_version as version,created_at,updated_at,created_by FROM namespaces WHERE service_id = $1"
 const countNamespaceNameByService = "SELECT count(namespace) as count FROM namespaces WHERE service_id=$1 AND namespace=$2"
 const findServiceIdFromName = "SELECT id FROM services WHERE name=$1"
 
@@ -58,7 +58,7 @@ func (s *namespaceRepository) createNewNamespace(namespaceStore *namespaceStore)
 	if namespaceStore.ServiceId == 0 || namespaceStore.Namespace == "" {
 		return errors.New(fmt.Sprintf("Data not defined properly (id, namespace): %v %v", namespaceStore.ServiceId, namespaceStore.Namespace))
 	}
-	_, err := s.execer.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace)
+	_, err := s.execer.DoQuery(createNewNamespaceQuery, namespaceStore.ServiceId, namespaceStore.Namespace, namespaceStore.CreatedBy)
 	return err
 }
 
