@@ -66,5 +66,4 @@ func (a *authorizator) AuthorizeAdmin(userID, organizationId int, permission run
 	default:
 		return permission == 'r'
 	}
-	return false
 }
