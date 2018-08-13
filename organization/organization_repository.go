@@ -3,8 +3,9 @@ package organization
 import (
 	"errors"
 
+	"net/http"
+
 	"github.com/go-squads/reuni-server/helper"
-		"net/http"
 )
 
 type repository interface {

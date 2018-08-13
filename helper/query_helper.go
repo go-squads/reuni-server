@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 )
@@ -46,7 +48,13 @@ func (q *QueryHelper) DoQueryRow(query string, args ...interface{}) (map[string]
 	err := q.DB.QueryRowx(query, args...).MapScan(data)
 	log.Printf("Query %v %v return %v", query, args, data)
 	if err != nil {
-		return nil, err
+		switch err {
+		case sql.ErrNoRows:
+			return nil, nil
+		default:
+			return nil, err
+		}
+
 	}
 	return data, nil
 }

@@ -1,7 +1,6 @@
 package users
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/authenticator"
+	"github.com/go-squads/reuni-server/helper"
 	"github.com/go-squads/reuni-server/response"
 )
 
@@ -21,26 +21,36 @@ func getProcessor() userProcessorInterface {
 	return proc
 }
 
+func getFromContext(r *http.Request, key string) string {
+	data := r.Context().Value(key)
+	if data == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", data)
+}
+
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userdata userv
 	err := json.NewDecoder(r.Body).Decode(&userdata)
 	defer r.Body.Close()
 
 	if err != nil {
-		log.Println("CreateUserHandler: " + err.Error())
-		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
+	if !userdata.Valid() {
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "User data not valid"))
 		return
 	}
 	userdata.Password = getProcessor().createUserEncryptPassword(userdata.Username, userdata.Password)
 	if userdata.Password == "" {
-		response.RespondWithError(w, http.StatusInternalServerError, response.ContentJson, "error encrypting password")
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, "password cant be encrypted"))
 		return
 	}
 
 	err = getProcessor().createUserProcessor(userdata)
 	if err != nil {
-		log.Println("CreateUserHandler: " + err.Error())
-		response.RespondWithError(w, http.StatusConflict, response.ContentJson, "error writing to database")
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusConflict, err.Error()))
 		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
@@ -51,24 +61,18 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&logindata)
 	defer r.Body.Close()
 	if err != nil {
-		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "error parsing body")
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
 	logindata.Password = getProcessor().createUserEncryptPassword(logindata.Username, logindata.Password)
 	if logindata.Password == "" {
-		response.RespondWithError(w, http.StatusInternalServerError, response.ContentJson, "error encrypting password")
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, "password cant be encrypted"))
 		return
 	}
 
 	userData, err := getProcessor().loginUserProcessor(logindata)
 	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			response.RespondWithError(w, http.StatusUnauthorized, response.ContentJson, "wrong username or password")
-		default:
-			response.RespondWithError(w, http.StatusInternalServerError, response.ContentText, "")
-		}
-		log.Println("LoginUserHandler: ", err.Error())
+		response.ResponseError("CreateUser", getFromContext(r, "username"), w, err)
 		return
 	}
 	log.Println("LoginUserHandler: ", string(userData), "succesfully login")

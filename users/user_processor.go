@@ -26,7 +26,6 @@ func (u *userProcessor) createUserProcessor(userdata userv) error {
 	userstore.Username = userdata.Username
 	userstore.Password = userdata.Password
 	userstore.Email = userdata.Email
-
 	return u.repo.createUser(userstore)
 }
 

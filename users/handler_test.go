@@ -1,7 +1,6 @@
 package users
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +39,9 @@ func TestCreateUserHandlerShouldReturnErrorWhenPasswordEncryptFailed(t *testing.
 	payload := `
 		{
 			"username":"test",
-			"password":"test"
+			"password":"test",
+			"email":"test",
+			"name":"Testing"
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("")
@@ -53,6 +54,26 @@ func TestCreateUserHandlerShouldReturnErrorWhenPasswordEncryptFailed(t *testing.
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
+func TestCreateUserHandlerShouldReturnErrorWhenUserDataNotValid(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserProcessorInterface(ctrl)
+	proc = mock
+	payload := `
+		{
+			"username":"test",
+			"password":"test",
+			"email":"",
+			"name":"Testing"
+		}
+	`
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/signup", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/signup", CreateUserHandler).Methods("POST")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
 func TestCreateUserHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockuserProcessorInterface(ctrl)
@@ -60,11 +81,13 @@ func TestCreateUserHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	payload := `
 		{
 			"username":"test",
-			"password":"test"
+			"password":"test",
+			"email":"test",
+			"name":"Testing"
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("testtest")
-	mock.EXPECT().createUserProcessor(userv{Username: "test", Password: "testtest"}).Return(helper.NewHttpError(http.StatusConflict, "error writing to database"))
+	mock.EXPECT().createUserProcessor(userv{Username: "test", Password: "testtest", Email: "test", Name: "Testing"}).Return(helper.NewHttpError(http.StatusConflict, "error writing to database"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/signup", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -80,11 +103,13 @@ func TestCreateUserHandlerShouldNotReturnError(t *testing.T) {
 	payload := `
 		{
 			"username":"test",
-			"password":"test"
+			"password":"test",
+			"email":"test",
+			"name":"Testing"
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("testtest")
-	mock.EXPECT().createUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil)
+	mock.EXPECT().createUserProcessor(userv{Username: "test", Password: "testtest", Email: "test", Name: "Testing"}).Return(nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/signup", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -140,7 +165,7 @@ func TestLoginUserHandlerShouldReturnErrorWhenQueryLoginErrorSqlNoRows(t *testin
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("testtest")
-	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, sql.ErrNoRows)
+	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, helper.NewHttpError(http.StatusUnauthorized, "Wrong username/password"))
 
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/login", strings.NewReader(payload))

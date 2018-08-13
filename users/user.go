@@ -25,3 +25,7 @@ type userv struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 }
+
+func (u *userv) Valid() bool {
+	return u.Name != "" && u.Username != "" && u.Password != "" && u.Email != ""
+}
