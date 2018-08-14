@@ -66,3 +66,14 @@ func TestLoginUserShouldReturnError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, data)
 }
+
+func TestLoginUserShouldReturnErrorUnauthorizedWhenNotValid(t *testing.T) {
+	rep := initRepository(makeMockRow(map[string]interface{}{"id": int64(0), "name": "test", "username": "test", "email": "test"}, nil))
+	user := userv{
+		Username: "usertest",
+		Password: "password",
+	}
+	data, err := rep.loginUser(user)
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}

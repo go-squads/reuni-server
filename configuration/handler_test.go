@@ -23,9 +23,9 @@ func TestGetConfigurationHandlerShouldReturnErrorWhenVersionCantBeParsed(t *test
 	`
 	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(nil, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/error", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/error", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
@@ -41,9 +41,9 @@ func TestGetConfigurationHandlerShouldReturnErrorWhenGetVersionReturnError(t *te
 	`
 	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(nil, errors.New("error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/1", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -59,9 +59,9 @@ func TestGetConfigurationHandlerShouldNotReturnError(t *testing.T) {
 	`
 	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(&configView{Version: 1}, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/1", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}", handler.GetConfigurationHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
@@ -77,9 +77,9 @@ func TestGetLatestVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	`
 	mock.EXPECT().getLatestVersionProcess("test", "test").Return(1, errors.New("error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/latest", handler.GetLatestVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.GetLatestVersionHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -95,9 +95,9 @@ func TestGetLatestVersionHandlerShouldNotReturnError(t *testing.T) {
 	`
 	mock.EXPECT().getLatestVersionProcess("test", "test").Return(1, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/1", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/{version}", handler.GetLatestVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}", handler.GetLatestVersionHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
@@ -113,9 +113,9 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenUrlNotValid(t *testing.T) {
 	`
 	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
@@ -131,9 +131,9 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	`
 	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(errors.New("error create query"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -149,9 +149,9 @@ func TestCreateNewVersionHandlerShouldNotReturnError(t *testing.T) {
 	`
 	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusCreated, rr.Code)
 }
@@ -167,9 +167,9 @@ func TestGetConfigurationVersionsHandlerShouldReturnErrorWhenQueryError(t *testi
 	`
 	mock.EXPECT().getConfigurationVersionsProcess("test", "test").Return("1", errors.New("error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/versions", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/versions", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/versions", handler.GetConfigurationVersionsHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/versions", handler.GetConfigurationVersionsHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -185,9 +185,9 @@ func TestGetConfigurationVersionsHandlerShouldNotReturnError(t *testing.T) {
 	`
 	mock.EXPECT().getConfigurationVersionsProcess("test", "test").Return("1", nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/test/versions", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/org/test/test/versions", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/{namespace}/versions", handler.GetConfigurationVersionsHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/versions", handler.GetConfigurationVersionsHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }

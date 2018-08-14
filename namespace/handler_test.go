@@ -23,9 +23,9 @@ func TestCreateNamespaceHandlerShouldReturnErrorWhenBodyCannotBeParsed(t *testin
 		}
 	`
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/services/test-service/namespaces", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test-service/namespaces", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
+	r.HandleFunc("/{organization_name}/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
@@ -43,9 +43,9 @@ func TestCreateNamespaceHandlerShouldReturnErrorWhenProcessorReturnError(t *test
 		Namespace: "default",
 	}).Return(errors.New("Test Error"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/services/test-service/namespaces", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test-service/namespaces", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
+	r.HandleFunc("/{organization_name}/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -63,9 +63,9 @@ func TestCreateNamespaceHandlerShouldNotReturnError(t *testing.T) {
 		Namespace: "default",
 	}).Return(nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/services/test-service/namespaces", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test-service/namespaces", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
+	r.HandleFunc("/{organization_name}/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusCreated, rr.Code)
 }
@@ -76,9 +76,9 @@ func TestRetrieveAllNamespaceHandlerShouldReturn500WhenError(t *testing.T) {
 	proc = mock
 	mock.EXPECT().retrieveAllNamespaceProcessor("test-service").Return([]byte(""), errors.New("TestError"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test-service/namespaces", nil)
+	req, _ := http.NewRequest("GET", "/org/test-service/namespaces", nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/namespaces", RetrieveAllNamespaceHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/namespaces", RetrieveAllNamespaceHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -88,9 +88,9 @@ func TestRetrieveAllNamespaceHandlerShouldReturn200(t *testing.T) {
 	proc = mock
 	mock.EXPECT().retrieveAllNamespaceProcessor("test-service").Return([]byte("[]"), nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test-service/namespaces", nil)
+	req, _ := http.NewRequest("GET", "/org/test-service/namespaces", nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/namespaces", RetrieveAllNamespaceHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/namespaces", RetrieveAllNamespaceHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }

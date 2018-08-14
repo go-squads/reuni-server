@@ -258,11 +258,11 @@ func TestValidateTokenShouldReturnValidTrue(t *testing.T) {
 
 	mock.EXPECT().ValidateTokenProcessor("test", "HelloWorld!").Return(true, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/validatetoken", strings.NewReader(payload))
+	req, _ := http.NewRequest("GET", "/test/test/validatetoken", strings.NewReader(payload))
 	req.Header.Set("Authorization", "HelloWorld!")
 
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/validatetoken", ValidateToken).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/validatetoken", ValidateToken).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var data map[string]bool
@@ -277,11 +277,11 @@ func TestValidateTokenShouldReturnValidFalse(t *testing.T) {
 
 	mock.EXPECT().ValidateTokenProcessor("test", "HelloWorld!").Return(false, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/validatetoken", strings.NewReader(""))
+	req, _ := http.NewRequest("GET", "/org/test/validatetoken", strings.NewReader(""))
 	req.Header.Set("Authorization", "HelloWorld!")
 
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/validatetoken", ValidateToken).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/validatetoken", ValidateToken).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var data map[string]bool
@@ -296,10 +296,10 @@ func TestValidateTokenShouldReturnErrorWhenProcessorError(t *testing.T) {
 
 	mock.EXPECT().ValidateTokenProcessor("test", "").Return(false, helper.NewHttpError(500, "TestError"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test/validatetoken", strings.NewReader(""))
+	req, _ := http.NewRequest("GET", "/org/test/validatetoken", strings.NewReader(""))
 
 	r := mux.NewRouter()
-	r.HandleFunc("/services/{service_name}/validatetoken", ValidateToken).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/validatetoken", ValidateToken).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
@@ -311,7 +311,7 @@ func TestGetTokenHandlerShouldReturnError(t *testing.T) {
 	}
 	appcontext.InitMockContext(q)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test-services/token", nil)
+	req, _ := http.NewRequest("GET", "/org/test-services/token", nil)
 	ServeRequest(rr, req, GetToken)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var data map[string]string
@@ -326,7 +326,7 @@ func TestGetTokenHandlerShouldNotReturnError(t *testing.T) {
 	}
 	appcontext.InitMockContext(q)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/services/test-services/token", nil)
+	req, _ := http.NewRequest("GET", "/org/test-services/token", nil)
 	ServeRequest(rr, req, GetToken)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	var data map[string]string
@@ -335,13 +335,13 @@ func TestGetTokenHandlerShouldNotReturnError(t *testing.T) {
 }
 
 func TestGetFromContextShouldReturnTheRightValue(t *testing.T) {
-	r, _ := http.NewRequest("GET", "/services/test-services/token", nil)
+	r, _ := http.NewRequest("GET", "/org/test-services/token", nil)
 	ctx := context.WithValue(r.Context(), "username", "go-squads")
 	r = r.WithContext(ctx)
 	assert.Equal(t, "go-squads", getFromContext(r, "username"))
 }
 
 func TestGetUsernameShouldReturnEmptyString(t *testing.T) {
-	r, _ := http.NewRequest("GET", "/services/test-services/token", nil)
+	r, _ := http.NewRequest("GET", "/org/test-services/token", nil)
 	assert.Empty(t, getFromContext(r, "username"))
 }
