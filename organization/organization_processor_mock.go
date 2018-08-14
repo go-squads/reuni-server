@@ -81,9 +81,9 @@ func (mr *MockprocessorMockRecorder) updateRoleOfUserProcessor(member interface{
 }
 
 // getAllMemberOfOrganizationProcessor mocks base method
-func (m *Mockprocessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error) {
+func (m *Mockprocessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]byte, error) {
 	ret := m.ctrl.Call(m, "getAllMemberOfOrganizationProcessor", organizationId)
-	ret0, _ := ret[0].([]map[string]interface{})
+	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -12,7 +12,7 @@ type processor interface {
 	addUserProcessor(member *Member) error
 	deleteUserFromGroupProcessor(organizationId, userId int64) error
 	updateRoleOfUserProcessor(member *Member) error
-	getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error)
+	getAllMemberOfOrganizationProcessor(organizationId int64) ([]byte, error)
 	getAllOrganizationProcessor(userId int) (string, error)
 	translateNameToIdProcessor(name string) (int, error)
 }
@@ -47,8 +47,16 @@ func (s *mainProcessor) updateRoleOfUserProcessor(member *Member) error {
 	return s.repo.updateRoleOfUser(member.Role, member.OrgId, member.UserId)
 }
 
-func (s *mainProcessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]map[string]interface{}, error) {
-	return s.repo.getAllMemberOfOrganization(organizationId)
+func (s *mainProcessor) getAllMemberOfOrganizationProcessor(organizationId int64) ([]byte, error) {
+	members, err := s.repo.getAllMemberOfOrganization(organizationId)
+	if err != nil {
+		return nil, helper.NewHttpError(http.StatusBadRequest, "Organization id is not valid")
+	}
+	membersJSON, err := json.Marshal(members)
+	if err != nil {
+		return nil, helper.NewHttpError(http.StatusInternalServerError, "error marshaling")
+	}
+	return membersJSON, err
 }
 
 func (s *mainProcessor) getAllOrganizationProcessor(userId int) (string, error) {

@@ -148,12 +148,11 @@ func GetAllMemberOfOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("GETALLMEMBER of orgID: " + fmt.Sprint(orgID))
 	members, err := getProcessor().getAllMemberOfOrganizationProcessor(orgID)
-	fmt.Println(fmt.Sprint(members))
 	if err != nil {
 		response.ResponseError("GetAllMemberOfOrganization", getFromContext(r, "username"), w, err)
 		return
 	}
-	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprint(members))
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(members))
 }
 
 func GetAllHandler(w http.ResponseWriter, r *http.Request) {
