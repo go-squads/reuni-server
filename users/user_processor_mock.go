@@ -80,3 +80,16 @@ func (m *MockuserProcessorInterface) loginUserProcessor(loginData userv) ([]byte
 func (mr *MockuserProcessorInterfaceMockRecorder) loginUserProcessor(loginData interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "loginUserProcessor", reflect.TypeOf((*MockuserProcessorInterface)(nil).loginUserProcessor), loginData)
 }
+
+// getAllUserProcessor mocks base method
+func (m *MockuserProcessorInterface) getAllUserProcessor() (string, error) {
+	ret := m.ctrl.Call(m, "getAllUserProcessor")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllUserProcessor indicates an expected call of getAllUserProcessor
+func (mr *MockuserProcessorInterfaceMockRecorder) getAllUserProcessor() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllUserProcessor", reflect.TypeOf((*MockuserProcessorInterface)(nil).getAllUserProcessor))
+}

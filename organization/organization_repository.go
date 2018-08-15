@@ -27,7 +27,7 @@ const (
 	addUserQuery                    = "INSERT INTO organization_member(organization_id, user_id, role) VALUES ($1,$2,$3) "
 	deleteUserFromGroupQuery        = "DELETE FROM organization_member where organization_id=$1 and user_id=$2"
 	updateRoleOfUserQuery           = "UPDATE organization_member SET role=$1 WHERE organization_id=$2 and user_id=$3"
-	getAllMemberOfOrganizationQuery = "SELECT U.username, OM.role, OM.created_at FROM organization_member OM, users U WHERE OM.user_id = U.id AND OM.organization_id=$1"
+	getAllMemberOfOrganizationQuery = "SELECT U.name, U.username, OM.role, OM.created_at FROM organization_member OM, users U WHERE OM.user_id = U.id AND OM.organization_id=$1"
 	getAllOrganizationQuery         = "SELECT O.id,O.name,OM.role FROM organization O, organization_member OM WHERE O.id=OM.organization_id AND OM.user_id = $1"
 	translateNameToIdQuery          = "SELECT id FROM organization WHERE name = $1"
 )

@@ -82,3 +82,13 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\"}", token))
 }
+
+func GetAllUserHandler(w http.ResponseWriter, r *http.Request) {
+	usr, err := getProcessor().getAllUserProcessor()
+	if err != nil {
+		response.ResponseError("GetAllUserHandler", getFromContext(r, "username"), w, err)
+		return
+	}
+	response.ResponseHelper(w, 200, response.ContentJson, usr)
+
+}

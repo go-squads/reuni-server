@@ -32,6 +32,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organizationAuthorizator(organization.DeleteUserFromGroupHandler, 'w'))).Methods("DELETE")
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organizationAuthorizator(organization.UpdateRoleOfUserHandler, 'w'))).Methods("PATCH")
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organization.GetAllMemberOfOrganizationHandler)).Methods("GET")
+	router.HandleFunc("/users", withAuthenticator(users.GetAllUserHandler)).Methods("GET")
 	router.HandleFunc("/signup", users.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/login", users.LoginUserHandler).Methods("POST")
 	return router

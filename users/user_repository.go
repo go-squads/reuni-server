@@ -26,11 +26,13 @@ func (v *verifiedUser) Valid() bool {
 const (
 	createUserQuery  = "INSERT INTO users (name, username, password, email, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)"
 	verifyLoginQuery = "SELECT id, name, username, email FROM users WHERE username=$1 AND password=$2"
+	getAllUserQuery  = "SELECT id,username,name FROM users"
 )
 
 type userRepositoryInterface interface {
 	createUser(userstore user) error
 	loginUser(loginData userv) ([]byte, error)
+	getAllUser() ([]user, error)
 }
 
 type userRepository struct {
@@ -71,4 +73,16 @@ func (u *userRepository) loginUser(loginData userv) ([]byte, error) {
 		return nil, helper.NewHttpError(http.StatusUnauthorized, "Wrong username/password")
 	}
 	return json.Marshal(v)
+}
+func (u *userRepository) getAllUser() ([]user, error) {
+	data, err := u.execer.DoQuery(getAllUserQuery)
+	if err != nil {
+		return nil, err
+	}
+	var users []user
+	err = helper.ParseMap(data, &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
