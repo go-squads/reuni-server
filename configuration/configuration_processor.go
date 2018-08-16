@@ -1,11 +1,13 @@
 package configuration
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Processor interface {
 	getConfigurationProcess(serviceName, namespace string, version int) (*configView, error)
 	getLatestVersionProcess(serviceName, namespace string) (int, error)
-	createNewVersionProcess(serviceName, namespace string, config configView) error
+	createNewVersionProcess(serviceName, namespace string, config configView) (int, error)
 	getConfigurationVersionsProcess(serviceName, namespace string) (string, error)
 }
 
@@ -37,25 +39,25 @@ func (s *mainProcessor) getLatestVersionProcess(serviceName, namespace string) (
 	return version, nil
 }
 
-func (s *mainProcessor) createNewVersionProcess(serviceName, namespace string, config configView) error {
+func (s *mainProcessor) createNewVersionProcess(serviceName, namespace string, config configView) (int, error) {
 	serviceId, err := s.repo.getServiceId(serviceName)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	latestVersion, err := s.repo.getLatestVersionForNamespace(serviceId, namespace)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	err = s.repo.createNewVersion(serviceId, namespace, config, latestVersion+1)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	err = s.repo.updateNamespaceActiveVersion(serviceId, namespace, latestVersion+1)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return latestVersion + 1, nil
 }
 
 func (s *mainProcessor) getConfigurationVersionsProcess(serviceName, namespace string) (string, error) {

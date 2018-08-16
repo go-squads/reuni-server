@@ -103,8 +103,9 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenServicenameDoesntExist(t *t
 	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
 	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
 
-	err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test", "test", configView{})
 	assert.Error(t, err)
+	assert.Empty(t, version)
 }
 
 func TestCreateNewVersionProcessShouldReturnErrorWhenNamespaceDoesntHaveLatestVersion(t *testing.T) {
@@ -118,8 +119,9 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenNamespaceDoesntHaveLatestVe
 	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
 	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
 
-	err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test", "test", configView{})
 	assert.Error(t, err)
+	assert.Empty(t, version)
 }
 
 func TestCreateNewVersionProcessShouldReturnErrorWhenQueryError(t *testing.T) {
@@ -133,8 +135,9 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenQueryError(t *testing.T) {
 	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(errors.New("create query error"))
 	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
 
-	err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test", "test", configView{})
 	assert.Error(t, err)
+	assert.Empty(t, version)
 }
 
 func TestCreateNewVersionProcessShouldReturnErrorWhenUpdateActiveVersionError(t *testing.T) {
@@ -148,8 +151,9 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenUpdateActiveVersionError(t 
 	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
 	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(errors.New("update version error"))
 
-	err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test", "test", configView{})
 	assert.Error(t, err)
+	assert.Empty(t, version)
 }
 
 func TestCreateNewVersionProcessShouldNotReturnError(t *testing.T) {
@@ -163,8 +167,9 @@ func TestCreateNewVersionProcessShouldNotReturnError(t *testing.T) {
 	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
 	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
 
-	err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test", "test", configView{})
 	assert.NoError(t, err)
+	assert.NotEmpty(t, version)
 }
 
 func TestGetConfigurationVersionsProcessShouldReturnErrorWhenServiceIdDoesntExist(t *testing.T) {

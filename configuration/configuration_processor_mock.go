@@ -59,10 +59,11 @@ func (mr *MockProcessorMockRecorder) getLatestVersionProcess(serviceName, namesp
 }
 
 // createNewVersionProcess mocks base method
-func (m *MockProcessor) createNewVersionProcess(serviceName, namespace string, config configView) error {
+func (m *MockProcessor) createNewVersionProcess(serviceName, namespace string, config configView) (int, error) {
 	ret := m.ctrl.Call(m, "createNewVersionProcess", serviceName, namespace, config)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // createNewVersionProcess indicates an expected call of createNewVersionProcess

@@ -10,6 +10,23 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:991bb96360eb8db70a40e9c496769fe6a7bbac4047f8376494d9837397078327"
+  name = "github.com/go-redis/redis"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/singleflight",
+    "internal/util",
+  ]
+  pruneopts = "UT"
+  revision = "480db94d33e6088e08d628833b6c0705451d24bb"
+  version = "v6.13.2"
+
+[[projects]]
   digest = "1:bc38c7c481812e178d85160472e231c5e1c9a7f5845d67e23ee4e706933c10d8"
   name = "github.com/golang/mock"
   packages = ["gomock"]
@@ -110,6 +127,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/go-redis/redis",
     "github.com/golang/mock/gomock",
     "github.com/gorilla/mux",
     "github.com/jmoiron/sqlx",

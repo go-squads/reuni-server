@@ -111,7 +111,7 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenUrlNotValid(t *testing.T) {
 			"makeiterror"
 		}
 	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(nil)
+	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(1, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -129,7 +129,7 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 			"user_id":1
 		}
 	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(errors.New("error create query"))
+	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(0, errors.New("error create query"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -147,7 +147,7 @@ func TestCreateNewVersionHandlerShouldNotReturnError(t *testing.T) {
 			"user_id":1
 		}
 	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(nil)
+	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(1, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
