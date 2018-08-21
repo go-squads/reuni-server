@@ -67,3 +67,29 @@ func TestLoginUserProcessorShouldReturnError(t *testing.T) {
 	assert.Nil(t, data)
 	assert.Error(t, err)
 }
+
+func TestGetAllProcessorShouldReturnErrorWhenRepositoryReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().getAllUser().Return(nil, errors.New("error query"))
+
+	data, err := proc.getAllUserProcessor()
+	assert.Empty(t, data)
+	assert.Error(t, err)
+}
+
+func TestGetAllProcessorShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	var users []user
+	users = append(users, user{ID: 1})
+	mock.EXPECT().getAllUser().Return(users, nil)
+
+	data, err := proc.getAllUserProcessor()
+	assert.NotEmpty(t, data)
+	assert.NoError(t, err)
+}

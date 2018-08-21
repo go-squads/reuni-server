@@ -77,3 +77,28 @@ func TestLoginUserShouldReturnErrorUnauthorizedWhenNotValid(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, data)
 }
+
+func TestGetAllUserRepositoryShouldReturnErrorWhenQueryError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("error query")))
+	data, err := rep.getAllUser()
+	assert.Error(t, err)
+	assert.Nil(t, data)
+}
+
+func TestGetAllUserRepositoryShouldReturnErrorWhenFailedToParseData(t *testing.T) {
+	datum := map[string]interface{}{"id": errors.New("error")}
+	data := []map[string]interface{}{datum}
+	rep := initRepository(makeMockRows(data, nil))
+	res, err := rep.getAllUser()
+	assert.Error(t, err)
+	assert.Nil(t, res)
+}
+
+func TestGetAllUserRepositoryShouldNotReturnError(t *testing.T) {
+	datum := map[string]interface{}{"id": 1}
+	data := []map[string]interface{}{datum}
+	rep := initRepository(makeMockRows(data, nil))
+	res, err := rep.getAllUser()
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+}

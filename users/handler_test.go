@@ -195,3 +195,31 @@ func TestLoginUserHandlerShouldReturnErrorWhenQueryLoginErrorDefault(t *testing.
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
+
+func TestGetAllUserHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserProcessorInterface(ctrl)
+	proc = mock
+	mock.EXPECT().getAllUserProcessor().Return("", errors.New("internal error"))
+
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/users", GetAllUserHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestGetAllUserHandlerShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserProcessorInterface(ctrl)
+	proc = mock
+	mock.EXPECT().getAllUserProcessor().Return("", nil)
+
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/users", GetAllUserHandler).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
