@@ -47,7 +47,7 @@ func TestCreateNamespaceHandlerShouldReturnErrorWhenProcessorReturnError(t *test
 	r := mux.NewRouter()
 	r.HandleFunc("/{organization_name}/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
 func TestCreateNamespaceHandlerShouldNotReturnError(t *testing.T) {

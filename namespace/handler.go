@@ -41,7 +41,7 @@ func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = getProcessor().createNewNamespaceProcessor(serviceName, &namespaceData)
 	if err != nil {
-		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, err)
+		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
@@ -51,7 +51,7 @@ func RetrieveAllNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var serviceName = mux.Vars(r)["service_name"]
 	configsjson, err := getProcessor().retrieveAllNamespaceProcessor(serviceName)
 	if err != nil {
-		response.ResponseError("RetrieveAllNamespace", getFromContext(r, "username"), w, err)
+		response.ResponseError("RetrieveAllNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(configsjson))
