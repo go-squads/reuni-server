@@ -55,19 +55,19 @@ func TestIsNamespaceExistReturnErrorWhenCoundNotInt(t *testing.T) {
 
 func TestCreateConfigurationShouldNotReturnError(t *testing.T) {
 	rep := initRepository(makeMockRow(nil, nil))
-	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": "123"})
+	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": "123"}, "tester")
 	assert.NoError(t, err)
 }
 
 func TestCreateConfigurationShouldReturnErrorWhenQueryError(t *testing.T) {
 	rep := initRepository(makeMockRow(nil, errors.New("Test Error")))
-	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": "123"})
+	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": "123"}, "tester")
 	assert.Error(t, err)
 }
 
 func TestCreateConfigurationShouldReturnErrorWhenConfigNotMarshalable(t *testing.T) {
 	rep := initRepository(makeMockRow(nil, errors.New("Test Error")))
-	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": make(chan int)})
+	err := rep.createConfiguration(1, "test-service", "name", map[string]interface{}{"DB_HOST": make(chan int)}, "tester")
 	assert.Error(t, err)
 }
 

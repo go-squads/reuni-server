@@ -51,7 +51,7 @@ func (s *mainProcessor) createNewNamespaceProcessor(organizationName, serviceNam
 		return err
 	}
 	configurations := namespacev.Configuration
-	err = s.repo.createConfiguration(organizationId, serviceName, namespacev.Namespace, configurations)
+	err = s.repo.createConfiguration(organizationId, serviceName, namespacev.Namespace, configurations, namespacev.CreatedBy)
 	return err
 }
 

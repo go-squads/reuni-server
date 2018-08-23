@@ -10,14 +10,14 @@ import (
 )
 
 const createNewNamespaceQuery = "INSERT INTO namespaces(organization_id, service_name, namespace,created_by) VALUES ($1,$2,$3,$4)"
-const createNewConfigurationsQuery = "INSERT INTO configurations(organization_id, service_name, namespace, config_store) VALUES ($1,$2,$3,$4)"
+const createNewConfigurationsQuery = "INSERT INTO configurations(organization_id, service_name, namespace, config_store, created_by) VALUES ($1,$2,$3,$4,$5)"
 const retrieveAllNamespaceQuery = "SELECT organization_id,service_name,namespace,active_version as version,created_at,updated_at,created_by FROM namespaces WHERE organization_id =$1 AND service_name = $2"
 const countNamespaceNameByService = "SELECT count(namespace) as count FROM namespaces WHERE organization_id =$1 AND service_name = $2 AND namespace=$3"
 const translateNametoIdQuery = "SELECT id FROM organization WHERE name=$1"
 
 type namespaceRepositoryInterface interface {
 	isNamespaceExist(organizationId int, serviceName, namespace string) (bool, error)
-	createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}) error
+	createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}, createdBy string) error
 	createNewNamespace(namespaceStore *namespaceStore) error
 	retrieveAllNamespace(organizationId int, serviceName string) ([]namespaceStore, error)
 	getOrganizationId(organizationName string) (int, error)
@@ -46,12 +46,12 @@ func (s *namespaceRepository) isNamespaceExist(organizationId int, serviceName, 
 
 	return count > 0, nil
 }
-func (s *namespaceRepository) createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}) error {
+func (s *namespaceRepository) createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}, createdBy string) error {
 	configjson, err := json.Marshal(configurations)
 	if err != nil {
 		return err
 	}
-	_, err = s.execer.DoQuery(createNewConfigurationsQuery, organizationId, serviceName, name, configjson)
+	_, err = s.execer.DoQuery(createNewConfigurationsQuery, organizationId, serviceName, name, configjson, createdBy)
 	return err
 }
 func (s *namespaceRepository) createNewNamespace(namespaceStore *namespaceStore) error {

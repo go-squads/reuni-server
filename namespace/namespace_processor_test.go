@@ -66,7 +66,7 @@ func TestCreateNamespaceProcessorShouldReturnErrorWhenCreateConfigurationReturnE
 	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
 	mock.EXPECT().isNamespaceExist(1, "test-service", "default").Return(false, nil)
 	mock.EXPECT().createNewNamespace(newNamespaceStruct(1, "test-service", "default", 1)).Return(nil)
-	mock.EXPECT().createConfiguration(1, "test-service", "default", map[string]interface{}{"DB_HOST": "127.0.0.1"}).Return(errors.New("Internal Error"))
+	mock.EXPECT().createConfiguration(1, "test-service", "default", map[string]interface{}{"DB_HOST": "127.0.0.1"}, "").Return(errors.New("Internal Error"))
 	err := procs.createNewNamespaceProcessor("test-organization", "test-service", newNamespaceViewStruct("default", map[string]interface{}{"DB_HOST": "127.0.0.1"}))
 	assert.Error(t, err)
 }
@@ -78,7 +78,7 @@ func TestCreateNamespaceProcessorShouldNotReturnError(t *testing.T) {
 	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
 	mock.EXPECT().isNamespaceExist(1, "test-service", "default").Return(false, nil)
 	mock.EXPECT().createNewNamespace(newNamespaceStruct(1, "test-service", "default", 1)).Return(nil)
-	mock.EXPECT().createConfiguration(1, "test-service", "default", map[string]interface{}{"DB_HOST": "127.0.0.1"}).Return(nil)
+	mock.EXPECT().createConfiguration(1, "test-service", "default", map[string]interface{}{"DB_HOST": "127.0.0.1"}, "").Return(nil)
 	err := procs.createNewNamespaceProcessor("test-organization", "test-service", newNamespaceViewStruct("default", map[string]interface{}{"DB_HOST": "127.0.0.1"}))
 	assert.NoError(t, err)
 }

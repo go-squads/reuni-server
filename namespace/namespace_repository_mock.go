@@ -46,15 +46,15 @@ func (mr *MocknamespaceRepositoryInterfaceMockRecorder) isNamespaceExist(organiz
 }
 
 // createConfiguration mocks base method
-func (m *MocknamespaceRepositoryInterface) createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}) error {
-	ret := m.ctrl.Call(m, "createConfiguration", organizationId, serviceName, name, configurations)
+func (m *MocknamespaceRepositoryInterface) createConfiguration(organizationId int, serviceName, name string, configurations map[string]interface{}, createdBy string) error {
+	ret := m.ctrl.Call(m, "createConfiguration", organizationId, serviceName, name, configurations, createdBy)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // createConfiguration indicates an expected call of createConfiguration
-func (mr *MocknamespaceRepositoryInterfaceMockRecorder) createConfiguration(organizationId, serviceName, name, configurations interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createConfiguration", reflect.TypeOf((*MocknamespaceRepositoryInterface)(nil).createConfiguration), organizationId, serviceName, name, configurations)
+func (mr *MocknamespaceRepositoryInterfaceMockRecorder) createConfiguration(organizationId, serviceName, name, configurations, createdBy interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createConfiguration", reflect.TypeOf((*MocknamespaceRepositoryInterface)(nil).createConfiguration), organizationId, serviceName, name, configurations, createdBy)
 }
 
 // createNewNamespace mocks base method
