@@ -39,7 +39,7 @@ func TestCreateNamespaceHandlerShouldReturnErrorWhenProcessorReturnError(t *test
 			"namespace": "default"
 		}
 	`
-	mock.EXPECT().createNewNamespaceProcessor("test-service", &namespaceView{
+	mock.EXPECT().createNewNamespaceProcessor("org", "test-service", &namespaceView{
 		Namespace: "default",
 	}).Return(errors.New("Test Error"))
 	var rr = httptest.NewRecorder()
@@ -47,7 +47,7 @@ func TestCreateNamespaceHandlerShouldReturnErrorWhenProcessorReturnError(t *test
 	r := mux.NewRouter()
 	r.HandleFunc("/{organization_name}/{service_name}/namespaces", CreateNamespaceHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
-	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
 func TestCreateNamespaceHandlerShouldNotReturnError(t *testing.T) {
@@ -59,7 +59,7 @@ func TestCreateNamespaceHandlerShouldNotReturnError(t *testing.T) {
 			"namespace": "default"
 		}
 	`
-	mock.EXPECT().createNewNamespaceProcessor("test-service", &namespaceView{
+	mock.EXPECT().createNewNamespaceProcessor("org", "test-service", &namespaceView{
 		Namespace: "default",
 	}).Return(nil)
 	var rr = httptest.NewRecorder()
@@ -74,7 +74,7 @@ func TestRetrieveAllNamespaceHandlerShouldReturn500WhenError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
 	proc = mock
-	mock.EXPECT().retrieveAllNamespaceProcessor("test-service").Return([]byte(""), errors.New("TestError"))
+	mock.EXPECT().retrieveAllNamespaceProcessor("org", "test-service").Return([]byte(""), errors.New("TestError"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test-service/namespaces", nil)
 	r := mux.NewRouter()
@@ -86,7 +86,7 @@ func TestRetrieveAllNamespaceHandlerShouldReturn200(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockprocessor(ctrl)
 	proc = mock
-	mock.EXPECT().retrieveAllNamespaceProcessor("test-service").Return([]byte("[]"), nil)
+	mock.EXPECT().retrieveAllNamespaceProcessor("org", "test-service").Return([]byte("[]"), nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test-service/namespaces", nil)
 	r := mux.NewRouter()

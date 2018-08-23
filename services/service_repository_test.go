@@ -35,7 +35,6 @@ func MockServiceMap(id int, name string) map[string]interface{} {
 
 func MockServiceStruct(id int, name string) service {
 	return service{
-		Id:   id,
 		Name: name,
 	}
 }
@@ -145,8 +144,8 @@ func TestFindOneServiceByNameShouldNotReturnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceRepositoryInterface(ctrl)
 
-	mock.EXPECT().findOneServiceByName("Hello").Return(&service{Name: "Hello"}, nil)
-	s, err := rep.findOneServiceByName("Hello")
+	mock.EXPECT().findOneServiceByName(1, "Hello").Return(&service{Name: "Hello"}, nil)
+	s, err := rep.findOneServiceByName(1, "Hello")
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 }
@@ -154,7 +153,7 @@ func TestFindOneServiceByNameShouldNotReturnError(t *testing.T) {
 func TestFindOneServiceByNameShouldReturnError(t *testing.T) {
 	rep := initRepository(makeMockRow(nil, errors.New("data error")))
 
-	s, err := rep.findOneServiceByName("Hello")
+	s, err := rep.findOneServiceByName(1, "Hello")
 	assert.Error(t, err)
 	assert.Empty(t, s)
 }
@@ -162,7 +161,7 @@ func TestFindOneServiceByNameShouldReturnError(t *testing.T) {
 func TestFindOneServiceByNameShouldReturnErrorWhenDataIsEmpty(t *testing.T) {
 	rep := initRepository(makeMockRows([]map[string]interface{}{}, nil))
 
-	s, err := rep.findOneServiceByName("Hello")
+	s, err := rep.findOneServiceByName(1, "Hello")
 	assert.Error(t, err)
 	assert.Nil(t, s)
 }
@@ -174,7 +173,7 @@ func TestFindOneServiceByNameShouldReturnErrorIfDataNotParsable(t *testing.T) {
 
 	rep := initRepository(makeMockRows(data, nil))
 
-	s, err := rep.findOneServiceByName("Hello")
+	s, err := rep.findOneServiceByName(1, "Hello")
 	assert.Error(t, err)
 	assert.Nil(t, s)
 }
@@ -185,7 +184,7 @@ func TestFindOneServiceByNameShouldReturnErrorIfDataNotMarshalable(t *testing.T)
 
 	rep := initRepository(makeMockRows(data, errors.New("data error")))
 
-	s, err := rep.findOneServiceByName("Hello")
+	s, err := rep.findOneServiceByName(1, "Hello")
 	assert.Error(t, err)
 	assert.Nil(t, s)
 }
@@ -197,7 +196,7 @@ func TestGetTokenShouldNotReturnError(t *testing.T) {
 	data = append(data, datum)
 	rep := initRepository(makeMockRows(data, nil))
 
-	token, err := rep.getServiceToken("Hello")
+	token, err := rep.getServiceToken(1, "Hello")
 	assert.NoError(t, err)
 	assert.Equal(t, "asdfsdfa", token.Token)
 }
@@ -205,7 +204,7 @@ func TestGetTokenShouldNotReturnError(t *testing.T) {
 func TestGetTokenShouldReturnErrorWhenThereIsNodata(t *testing.T) {
 	rep := initRepository(makeMockRows(nil, errors.New("error no data")))
 
-	services, err := rep.getServiceToken("hello")
+	services, err := rep.getServiceToken(1, "hello")
 	assert.Empty(t, services)
 	assert.Error(t, err)
 }
@@ -216,7 +215,7 @@ func TestGetTokenShouldReturnErrorWhenDataNotParsable(t *testing.T) {
 	data := []map[string]interface{}{datum}
 	rep := initRepository(makeMockRows(data, nil))
 
-	services, err := rep.getServiceToken("hello")
+	services, err := rep.getServiceToken(1, "hello")
 	assert.Empty(t, services)
 	assert.Error(t, err)
 }
@@ -227,7 +226,7 @@ func TestGetTokenShouldReturnErrorWhenDataNotMarshalable(t *testing.T) {
 	var data []map[string]interface{}
 	rep := initRepository(makeMockRows(data, nil))
 
-	services, err := rep.getServiceToken("hello")
+	services, err := rep.getServiceToken(1, "hello")
 	assert.Empty(t, services)
 	assert.Error(t, err)
 }

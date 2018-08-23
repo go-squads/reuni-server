@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-squads/reuni-server/organization"
+	"github.com/go-squads/reuni-server/services"
 
 	"github.com/go-squads/reuni-server/authorizator"
 	"github.com/go-squads/reuni-server/helper"
@@ -16,7 +17,6 @@ import (
 	"github.com/go-squads/reuni-server/appcontext"
 
 	"github.com/go-squads/reuni-server/response"
-	"github.com/go-squads/reuni-server/services"
 	"github.com/gorilla/mux"
 
 	"github.com/go-squads/reuni-server/authenticator"
@@ -47,8 +47,8 @@ func withAuthenticator(next http.HandlerFunc) http.HandlerFunc {
 func withAuthorizator(next http.HandlerFunc, permission rune) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := authorizator.New(appcontext.GetHelper())
-		serviceName := mux.Vars(r)["service_name"]
-		service, err := services.FindOneServiceByName(appcontext.GetHelper(), serviceName)
+		organizationName := mux.Vars(r)["organization_name"]
+		organizationId, err := organization.TranslateNameToIdProcessor(appcontext.GetHelper(), organizationName)
 		if err != nil {
 			response.ResponseError("AuthorizatorMiddleware", "", w, helper.NewHttpError(http.StatusNotFound, "Not Found"))
 			return
@@ -57,7 +57,7 @@ func withAuthorizator(next http.HandlerFunc, permission rune) http.HandlerFunc {
 		if err != nil {
 			response.ResponseError("AuthorizationMiddleware", "", w, helper.NewHttpError(http.StatusInternalServerError, "Cannot parse userId"))
 		}
-		res := auth.Authorize(int(uid), service.Id, permission)
+		res := auth.Authorize(int(uid), organizationId, permission)
 		if res {
 			next.ServeHTTP(w, r)
 		} else {
@@ -90,8 +90,13 @@ func organizationAuthorizator(next http.HandlerFunc, permission rune) http.Handl
 func validateAgentTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
+		organizationName := mux.Vars(r)["organization_name"]
+		organizationId, err := organization.TranslateNameToIdProcessor(appcontext.GetHelper(), organizationName)
+		if err != nil {
+			response.ResponseError("AuthorizationMiddleware", "", w, helper.NewHttpError(http.StatusInternalServerError, "Cannot parse organization name"))
+		}
 		serviceName := mux.Vars(r)["service_name"]
-		res, err := services.ValidateTokenProcessor(appcontext.GetHelper(), serviceName, token)
+		res, err := services.ValidateTokenProcessor(appcontext.GetHelper(), organizationId, serviceName, token)
 		if err != nil {
 			response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 			return

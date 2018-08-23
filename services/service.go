@@ -3,7 +3,6 @@ package services
 import "time"
 
 type service struct {
-	Id                 int        `json:"id"`
 	Name               string     `json:"name"`
 	AuthorizationToken string     `json:"authorization_token"`
 	CreatedAt          *time.Time `json:"created_at"`
@@ -21,7 +20,7 @@ type serviceToken struct {
 }
 
 func (s *service) IsEmpty() bool {
-	return (s.Id == 0 && s.Name == "" && s.AuthorizationToken == "" && s.CreatedAt == nil)
+	return (s.Name == "" && s.AuthorizationToken == "" && s.CreatedAt == nil)
 }
 
 func (s *serviceToken) IsEmpty() bool {

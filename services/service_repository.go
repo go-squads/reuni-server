@@ -3,16 +3,18 @@ package services
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
+	"log"
 
 	"github.com/go-squads/reuni-server/helper"
 )
 
 const (
-	getAllServicesQuery       = "SELECT id,name,created_at,created_by FROM services WHERE organization_id = $1"
+	getAllServicesQuery       = "SELECT organization_id,name,authorization_token,created_at,created_by FROM services WHERE organization_id = $1"
 	createServiceQuery        = "INSERT INTO services(name, organization_id,authorization_token, created_by) VALUES ($1,$2,$3,$4)"
-	deleteServiceQuery        = "DELETE FROM services WHERE name = $1"
-	findOneServiceByNameQuery = "SELECT id, name, created_by FROM services WHERE name = $1"
-	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE name = $1"
+	deleteServiceQuery        = "DELETE FROM services WHERE organization_id = $1 AND name = $2"
+	findOneServiceByNameQuery = "SELECT name, created_by FROM services WHERE organization_id = $1 AND name = $2"
+	getServiceTokenQuery      = "SELECT authorization_token FROM services WHERE organization_id = $1 AND name = $2"
 	translateNameToIdQuery    = "SELECT id FROM organization WHERE name = $1"
 )
 
@@ -20,8 +22,8 @@ type serviceRepositoryInterface interface {
 	getAll(organizationId int) ([]service, error)
 	createService(servicestore service) error
 	deleteService(servicestore service) error
-	getServiceToken(name string) (*serviceToken, error)
-	findOneServiceByName(name string) (*service, error)
+	getServiceToken(organizationId int, name string) (*serviceToken, error)
+	findOneServiceByName(organizationId int, name string) (*service, error)
 	translateNameToIdRepository(organizationName string) (int, error)
 	generateToken() string
 }
@@ -55,12 +57,12 @@ func (s *serviceRepository) createService(servicestore service) error {
 }
 
 func (s *serviceRepository) deleteService(servicestore service) error {
-	_, err := s.execer.DoQuery(deleteServiceQuery, servicestore.Name)
+	_, err := s.execer.DoQuery(deleteServiceQuery, servicestore.OrganizationId, servicestore.Name)
 	return err
 }
 
-func (s *serviceRepository) findOneServiceByName(name string) (*service, error) {
-	data, err := s.execer.DoQuery(findOneServiceByNameQuery, name)
+func (s *serviceRepository) findOneServiceByName(organizationId int, name string) (*service, error) {
+	data, err := s.execer.DoQuery(findOneServiceByNameQuery, organizationId, name)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +77,10 @@ func (s *serviceRepository) findOneServiceByName(name string) (*service, error) 
 	return &dest, err
 }
 
-func (s *serviceRepository) getServiceToken(name string) (*serviceToken, error) {
+func (s *serviceRepository) getServiceToken(organizationId int, name string) (*serviceToken, error) {
 	var token serviceToken
-	data, err := s.execer.DoQuery(getServiceTokenQuery, name)
+	log.Println("ORGID: " + fmt.Sprint(organizationId) + " Service: " + name)
+	data, err := s.execer.DoQuery(getServiceTokenQuery, organizationId, name)
 	if err != nil {
 		return nil, err
 	}

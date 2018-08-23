@@ -19,7 +19,7 @@ func TestCreateServiceProcessorShouldNotReturnError(t *testing.T) {
 		OrganizationId:     1,
 		AuthorizationToken: "123",
 	}
-	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().findOneServiceByName(1, "test").Return(nil, errors.New("error"))
 	mock.EXPECT().generateToken().Return("123")
 	mock.EXPECT().createService(service_expected).Return(nil)
 
@@ -37,7 +37,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenRepositoryReturnError(t *tes
 		OrganizationId:     1,
 		AuthorizationToken: "123",
 	}
-	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().findOneServiceByName(1, "test").Return(nil, errors.New("error"))
 	mock.EXPECT().generateToken().Return("123")
 	mock.EXPECT().createService(service_expected).Return(errors.New("Duplicate key"))
 
@@ -55,7 +55,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testin
 		OrganizationId:     1,
 		AuthorizationToken: "123",
 	}
-	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error"))
+	mock.EXPECT().findOneServiceByName(1, "test").Return(nil, errors.New("error"))
 	mock.EXPECT().generateToken().Return("123")
 	mock.EXPECT().createService(service_expected).Return(nil)
 
@@ -76,7 +76,7 @@ func TestCreateServiceProcessorShouldReturnErrorWhenServiceNameIsDuplicate(t *te
 		OrganizationId:     1,
 		AuthorizationToken: "123",
 	}
-	mock.EXPECT().findOneServiceByName("test").Return(&service_expected, nil)
+	mock.EXPECT().findOneServiceByName(1, "test").Return(&service_expected, nil)
 	mock.EXPECT().generateToken().Return("123")
 	mock.EXPECT().createService(service_expected).Return(nil)
 
@@ -93,11 +93,12 @@ func TestDeleteServiceProcessorShouldNotReturnError(t *testing.T) {
 	mock := NewMockserviceRepositoryInterface(ctrl)
 	proc := serviceProcessor{repo: mock}
 	service := service{
-		Name: "test",
+		OrganizationId: 1,
+		Name:           "test",
 	}
 	mock.EXPECT().deleteService(service).Return(nil)
 	serv := servicev{Name: "test"}
-	err := proc.deleteServiceProcessor(serv)
+	err := proc.deleteServiceProcessor(1, serv)
 	assert.NoError(t, err)
 }
 
@@ -109,7 +110,7 @@ func TestDeleteServiceProcessorShouldReturnErrorWhenServiceNameIsEmpty(t *testin
 	mock.EXPECT().deleteService(service).Return(nil)
 
 	serv := servicev{}
-	err := proc.deleteServiceProcessor(serv)
+	err := proc.deleteServiceProcessor(1, serv)
 	assert.Error(t, err)
 }
 
@@ -123,8 +124,8 @@ func TestValidateTokenProcessorShouldNotReturnError(t *testing.T) {
 	serviceToken_expected := &serviceToken{
 		Token: "123",
 	}
-	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, nil)
-	res, err := proc.ValidateTokenProcessor(serv.Name, "123")
+	mock.EXPECT().getServiceToken(1, "test").Return(serviceToken_expected, nil)
+	res, err := proc.ValidateTokenProcessor(1, serv.Name, "123")
 	assert.True(t, res)
 	assert.NoError(t, err)
 }
@@ -139,9 +140,9 @@ func TestValidateTokenProcessorShouldNotReturnErrorWhenTokenIsNotValid(t *testin
 	serviceToken_expected := &serviceToken{
 		Token: "123",
 	}
-	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, nil)
+	mock.EXPECT().getServiceToken(1, "test").Return(serviceToken_expected, nil)
 
-	res, err := proc.ValidateTokenProcessor(serv.Name, "155")
+	res, err := proc.ValidateTokenProcessor(1, serv.Name, "155")
 	assert.False(t, res)
 	assert.NoError(t, err)
 }
@@ -156,8 +157,8 @@ func TestValidateTokenProcessorShouldReturnErrorWhenTokenIsNil(t *testing.T) {
 	serviceToken_expected := &serviceToken{
 		Token: "",
 	}
-	mock.EXPECT().getServiceToken("test").Return(serviceToken_expected, errors.New("token is nil"))
-	res, err := proc.ValidateTokenProcessor(serv.Name, "")
+	mock.EXPECT().getServiceToken(1, "test").Return(serviceToken_expected, errors.New("token is nil"))
+	res, err := proc.ValidateTokenProcessor(1, serv.Name, "")
 	assert.False(t, res)
 	assert.Error(t, err)
 }
@@ -173,7 +174,7 @@ func TestValidateTokenProcessorWithoutReceiverShouldNotReturnError(t *testing.T)
 	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(q, serv.Name, "123")
+	res, err := ValidateTokenProcessor(q, 1, serv.Name, "123")
 	assert.True(t, res)
 	assert.NoError(t, err)
 }
@@ -189,7 +190,7 @@ func TestValidateTokenProcessorWithoutReceiverShouldNotReturnErrorWhenTokenIsNot
 	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(q, serv.Name, "155")
+	res, err := ValidateTokenProcessor(q, 1, serv.Name, "155")
 	assert.False(t, res)
 	assert.NoError(t, err)
 }
@@ -205,7 +206,7 @@ func TestValidateTokenProcessorWithoutProcessorShouldReturnErrorWhenTokenIsNil(t
 	serv := &servicev{
 		Name: "test",
 	}
-	res, err := ValidateTokenProcessor(q, serv.Name, "")
+	res, err := ValidateTokenProcessor(q, 1, serv.Name, "")
 	assert.False(t, res)
 	assert.Error(t, err)
 }
@@ -215,9 +216,9 @@ func TestFindOneServiceByNameWithContextShouldReturnError(t *testing.T) {
 	mock := NewMockserviceRepositoryInterface(ctrl)
 	proc := serviceProcessor{repo: mock}
 
-	mock.EXPECT().findOneServiceByName("test").Return(nil, errors.New("error data"))
+	mock.EXPECT().findOneServiceByName(1, "test").Return(nil, errors.New("error data"))
 
-	service, err := proc.FindOneServiceByName("test")
+	service, err := proc.FindOneServiceByName(1, "test")
 	assert.Nil(t, service)
 	assert.Error(t, err)
 }
@@ -228,11 +229,10 @@ func TestFindOneServiceByNameWithContextShouldNotReturnError(t *testing.T) {
 	mock := NewMockserviceRepositoryInterface(ctrl)
 	proc := serviceProcessor{repo: mock}
 
-	mock.EXPECT().findOneServiceByName("test").Return(&service{Id: 1, Name: "test"}, nil)
+	mock.EXPECT().findOneServiceByName(1, "test").Return(&service{Name: "test"}, nil)
 
-	service, err := proc.FindOneServiceByName("test")
+	service, err := proc.FindOneServiceByName(1, "test")
 	assert.Equal(t, service.Name, "test")
-	assert.Equal(t, service.Id, 1)
 	assert.NoError(t, err)
 }
 
@@ -243,7 +243,7 @@ func TestFindOneServiceByNameWithoutReceiverWithContextShouldReturnError(t *test
 	}
 	appcontext.InitMockContext(q)
 
-	service, err := FindOneServiceByName(q, "test")
+	service, err := FindOneServiceByName(q, 1, "test")
 	assert.Nil(t, service)
 	assert.Error(t, err)
 }
@@ -255,9 +255,8 @@ func TestFindOneServiceByNameWithoutReceiverWithContextShouldNotReturnError(t *t
 	}
 	appcontext.InitMockContext(q)
 
-	service, err := FindOneServiceByName(q, "test")
+	service, err := FindOneServiceByName(q, 1, "test")
 	assert.Equal(t, service.Name, "test")
-	assert.Equal(t, service.Id, 1)
 	assert.NoError(t, err)
 }
 

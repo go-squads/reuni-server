@@ -7,7 +7,7 @@ import (
 )
 
 type Authorizator interface {
-	Authorize(userID, serviceID int, permission rune) bool
+	Authorize(userID, organizationId int, permission rune) bool
 	AuthorizeAdmin(userID, organizationId int, permission rune) bool
 }
 
@@ -23,21 +23,17 @@ func New(helper helper.QueryExecuter) Authorizator {
 
 const (
 	checkUserIDExistingQuery = `
-	SELECT  role from organization_member where organization_id= 
-	(
-		select organization_id FROM services where id=$1
-	)
-	AND user_id=$2
-	`
-	checkUserIDAdminQuery = `
-	SELECT  role from organization_member where organization_id= $1 AND user_id=$2
+	SELECT role from organization_member where organization_id= $1 AND user_id=$2
 	`
 )
 
-func (a *authorizator) Authorize(userID, serviceID int, permission rune) bool {
-	data, err := a.helper.DoQueryRow(checkUserIDExistingQuery, serviceID, userID)
+func (a *authorizator) Authorize(userID, organizationId int, permission rune) bool {
+	data, err := a.helper.DoQueryRow(checkUserIDExistingQuery, organizationId, userID)
 	if err != nil {
 		log.Println("Authorizator:", err.Error())
+		return false
+	}
+	if data == nil {
 		return false
 	}
 	role := data["role"].(string)
@@ -54,9 +50,12 @@ func (a *authorizator) Authorize(userID, serviceID int, permission rune) bool {
 }
 
 func (a *authorizator) AuthorizeAdmin(userID, organizationId int, permission rune) bool {
-	data, err := a.helper.DoQueryRow(checkUserIDAdminQuery, organizationId, userID)
+	data, err := a.helper.DoQueryRow(checkUserIDExistingQuery, organizationId, userID)
 	if err != nil {
 		log.Println("Authorizator:", err.Error())
+		return false
+	}
+	if data == nil {
 		return false
 	}
 	role := data["role"].(string)

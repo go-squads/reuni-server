@@ -33,53 +33,53 @@ func (m *MockProcessor) EXPECT() *MockProcessorMockRecorder {
 }
 
 // getConfigurationProcess mocks base method
-func (m *MockProcessor) getConfigurationProcess(serviceName, namespace string, version int) (*configView, error) {
-	ret := m.ctrl.Call(m, "getConfigurationProcess", serviceName, namespace, version)
+func (m *MockProcessor) getConfigurationProcess(organizationName, serviceName, namespace string, version int) (*configView, error) {
+	ret := m.ctrl.Call(m, "getConfigurationProcess", organizationName, serviceName, namespace, version)
 	ret0, _ := ret[0].(*configView)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // getConfigurationProcess indicates an expected call of getConfigurationProcess
-func (mr *MockProcessorMockRecorder) getConfigurationProcess(serviceName, namespace, version interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getConfigurationProcess", reflect.TypeOf((*MockProcessor)(nil).getConfigurationProcess), serviceName, namespace, version)
+func (mr *MockProcessorMockRecorder) getConfigurationProcess(organizationName, serviceName, namespace, version interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getConfigurationProcess", reflect.TypeOf((*MockProcessor)(nil).getConfigurationProcess), organizationName, serviceName, namespace, version)
 }
 
 // getLatestVersionProcess mocks base method
-func (m *MockProcessor) getLatestVersionProcess(serviceName, namespace string) (int, error) {
-	ret := m.ctrl.Call(m, "getLatestVersionProcess", serviceName, namespace)
+func (m *MockProcessor) getLatestVersionProcess(organizationName, serviceName, namespace string) (int, error) {
+	ret := m.ctrl.Call(m, "getLatestVersionProcess", organizationName, serviceName, namespace)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // getLatestVersionProcess indicates an expected call of getLatestVersionProcess
-func (mr *MockProcessorMockRecorder) getLatestVersionProcess(serviceName, namespace interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getLatestVersionProcess", reflect.TypeOf((*MockProcessor)(nil).getLatestVersionProcess), serviceName, namespace)
+func (mr *MockProcessorMockRecorder) getLatestVersionProcess(organizationName, serviceName, namespace interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getLatestVersionProcess", reflect.TypeOf((*MockProcessor)(nil).getLatestVersionProcess), organizationName, serviceName, namespace)
 }
 
 // createNewVersionProcess mocks base method
-func (m *MockProcessor) createNewVersionProcess(serviceName, namespace string, config configView) (int, error) {
-	ret := m.ctrl.Call(m, "createNewVersionProcess", serviceName, namespace, config)
+func (m *MockProcessor) createNewVersionProcess(organizationName, serviceName, namespace string, config configView) (int, error) {
+	ret := m.ctrl.Call(m, "createNewVersionProcess", organizationName, serviceName, namespace, config)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // createNewVersionProcess indicates an expected call of createNewVersionProcess
-func (mr *MockProcessorMockRecorder) createNewVersionProcess(serviceName, namespace, config interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createNewVersionProcess", reflect.TypeOf((*MockProcessor)(nil).createNewVersionProcess), serviceName, namespace, config)
+func (mr *MockProcessorMockRecorder) createNewVersionProcess(organizationName, serviceName, namespace, config interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createNewVersionProcess", reflect.TypeOf((*MockProcessor)(nil).createNewVersionProcess), organizationName, serviceName, namespace, config)
 }
 
 // getConfigurationVersionsProcess mocks base method
-func (m *MockProcessor) getConfigurationVersionsProcess(serviceName, namespace string) (string, error) {
-	ret := m.ctrl.Call(m, "getConfigurationVersionsProcess", serviceName, namespace)
+func (m *MockProcessor) getConfigurationVersionsProcess(organizationName, serviceName, namespace string) (string, error) {
+	ret := m.ctrl.Call(m, "getConfigurationVersionsProcess", organizationName, serviceName, namespace)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // getConfigurationVersionsProcess indicates an expected call of getConfigurationVersionsProcess
-func (mr *MockProcessorMockRecorder) getConfigurationVersionsProcess(serviceName, namespace interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getConfigurationVersionsProcess", reflect.TypeOf((*MockProcessor)(nil).getConfigurationVersionsProcess), serviceName, namespace)
+func (mr *MockProcessorMockRecorder) getConfigurationVersionsProcess(organizationName, serviceName, namespace interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getConfigurationVersionsProcess", reflect.TypeOf((*MockProcessor)(nil).getConfigurationVersionsProcess), organizationName, serviceName, namespace)
 }

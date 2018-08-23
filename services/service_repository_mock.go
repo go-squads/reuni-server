@@ -70,29 +70,29 @@ func (mr *MockserviceRepositoryInterfaceMockRecorder) deleteService(servicestore
 }
 
 // getServiceToken mocks base method
-func (m *MockserviceRepositoryInterface) getServiceToken(name string) (*serviceToken, error) {
-	ret := m.ctrl.Call(m, "getServiceToken", name)
+func (m *MockserviceRepositoryInterface) getServiceToken(organizationId int, name string) (*serviceToken, error) {
+	ret := m.ctrl.Call(m, "getServiceToken", organizationId, name)
 	ret0, _ := ret[0].(*serviceToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // getServiceToken indicates an expected call of getServiceToken
-func (mr *MockserviceRepositoryInterfaceMockRecorder) getServiceToken(name interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getServiceToken", reflect.TypeOf((*MockserviceRepositoryInterface)(nil).getServiceToken), name)
+func (mr *MockserviceRepositoryInterfaceMockRecorder) getServiceToken(organizationId, name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getServiceToken", reflect.TypeOf((*MockserviceRepositoryInterface)(nil).getServiceToken), organizationId, name)
 }
 
 // findOneServiceByName mocks base method
-func (m *MockserviceRepositoryInterface) findOneServiceByName(name string) (*service, error) {
-	ret := m.ctrl.Call(m, "findOneServiceByName", name)
+func (m *MockserviceRepositoryInterface) findOneServiceByName(organizationId int, name string) (*service, error) {
+	ret := m.ctrl.Call(m, "findOneServiceByName", organizationId, name)
 	ret0, _ := ret[0].(*service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // findOneServiceByName indicates an expected call of findOneServiceByName
-func (mr *MockserviceRepositoryInterfaceMockRecorder) findOneServiceByName(name interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "findOneServiceByName", reflect.TypeOf((*MockserviceRepositoryInterface)(nil).findOneServiceByName), name)
+func (mr *MockserviceRepositoryInterfaceMockRecorder) findOneServiceByName(organizationId, name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "findOneServiceByName", reflect.TypeOf((*MockserviceRepositoryInterface)(nil).findOneServiceByName), organizationId, name)
 }
 
 // translateNameToIdRepository mocks base method

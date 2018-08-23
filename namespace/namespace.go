@@ -3,13 +3,13 @@ package namespace
 import "time"
 
 type namespaceStore struct {
-	Id            int       `json:"id"`
-	ServiceId     int       `json:"service_id"`
-	Namespace     string    `json:"namespace"`
-	ActiveVersion int       `json:"version"`
-	CreatedBy     string    `json:"created_by"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	OrganizationId int       `json:"organization_id"`
+	ServiceName    string    `json:"service_name"`
+	Namespace      string    `json:"namespace"`
+	ActiveVersion  int       `json:"version"`
+	CreatedBy      string    `json:"created_by"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type namespaceView struct {
@@ -18,12 +18,12 @@ type namespaceView struct {
 	CreatedBy     string                 `json:"created_by"`
 }
 
-func newNamespaceStruct(id int, serviceId int, name string, active int) *namespaceStore {
+func newNamespaceStruct(organizationId int, serviceName, name string, active int) *namespaceStore {
 	return &namespaceStore{
-		Id:            id,
-		ServiceId:     serviceId,
-		Namespace:     name,
-		ActiveVersion: active,
+		OrganizationId: organizationId,
+		ServiceName:    serviceName,
+		Namespace:      name,
+		ActiveVersion:  active,
 	}
 }
 

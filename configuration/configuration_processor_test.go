@@ -8,16 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetConfigurationProcessShouldReturnErrorWhenServiceNameDoesntExist(t *testing.T) {
+func TestGetConfigurationProcessShouldReturnErrorWhenOrganizationNameDoesntExist(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockRepository(ctrl)
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(0, errors.New("service name doesnt exist"))
-	mock.EXPECT().getConfiguration(1, "test", 1)
+	mock.EXPECT().getOrganizationId("test-organization").Return(0, errors.New("organization name doesnt exist"))
+	mock.EXPECT().getConfiguration(1, "test-service", "test", 1)
 
-	config, err := proc.getConfigurationProcess("test", "test", 1)
+	config, err := proc.getConfigurationProcess("test-organization", "test-service", "test", 1)
 	assert.Error(t, err)
 	assert.Empty(t, config)
 }
@@ -28,10 +28,10 @@ func TestGetConfigurationProcessShouldReturnErrorWhenConfigDoesntExist(t *testin
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getConfiguration(1, "test", 1).Return(nil, errors.New("config not found"))
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getConfiguration(1, "test-service", "test", 1).Return(nil, errors.New("config not found"))
 
-	config, err := proc.getConfigurationProcess("test", "test", 1)
+	config, err := proc.getConfigurationProcess("test-organization", "test-service", "test", 1)
 	assert.Error(t, err)
 	assert.Empty(t, config)
 }
@@ -42,24 +42,24 @@ func TestGetConfigurationProcessShouldNotReturnError(t *testing.T) {
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getConfiguration(1, "test", 1).Return(&configView{}, nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getConfiguration(1, "test-service", "test", 1).Return(&configView{}, nil)
 
-	config, err := proc.getConfigurationProcess("test", "test", 1)
+	config, err := proc.getConfigurationProcess("test-organization", "test-service", "test", 1)
 	assert.NoError(t, err)
 	assert.NotNil(t, config)
 }
 
-func TestGetLatestVersionProcessShouldReturnErrorWhenServiceNameDoesntExist(t *testing.T) {
+func TestGetLatestVersionProcessShouldReturnErrorWhenOrganizationNameDoesntExist(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockRepository(ctrl)
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(0, errors.New("service name doesnt exist"))
-	mock.EXPECT().getLatestVersionForNamespace(1, "test")
+	mock.EXPECT().getOrganizationId("test-organization").Return(0, errors.New("organization name doesnt exist"))
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test")
 
-	config, err := proc.getLatestVersionProcess("test", "test")
+	config, err := proc.getLatestVersionProcess("test-organization", "test-service", "test")
 	assert.Error(t, err)
 	assert.Empty(t, config)
 }
@@ -70,10 +70,10 @@ func TestGetLatestVersionProcessShouldReturnErrorWhenConfigDoesntExist(t *testin
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(0, errors.New("config not found"))
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(0, errors.New("config not found"))
 
-	config, err := proc.getLatestVersionProcess("test", "test")
+	config, err := proc.getLatestVersionProcess("test-organization", "test-service", "test")
 	assert.Error(t, err)
 	assert.Empty(t, config)
 }
@@ -84,26 +84,26 @@ func TestGetLatestVersionProcessShouldNotReturnError(t *testing.T) {
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(1, nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(1, nil)
 
-	config, err := proc.getLatestVersionProcess("test", "test")
+	config, err := proc.getLatestVersionProcess("test-organization", "test-service", "test")
 	assert.NoError(t, err)
 	assert.NotNil(t, config)
 }
 
-func TestCreateNewVersionProcessShouldReturnErrorWhenServicenameDoesntExist(t *testing.T) {
+func TestCreateNewVersionProcessShouldReturnErrorWhenOrganizationNameDoesntExist(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockRepository(ctrl)
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(0, errors.New("error namespace doesnt exist"))
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(1, nil)
-	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
-	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(0, errors.New("error namespace doesnt exist"))
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(1, nil)
+	mock.EXPECT().createNewVersion(1, "test-service", "test", configView{Created_by: "tester"}, 2).Return(nil)
+	mock.EXPECT().updateNamespaceActiveVersion(1, "test-service", "test", 2).Return(nil)
 
-	version, err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test-organization", "test", "test", configView{})
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -114,12 +114,12 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenNamespaceDoesntHaveLatestVe
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(0, errors.New("error latest version not found"))
-	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
-	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(0, errors.New("error latest version not found"))
+	mock.EXPECT().createNewVersion(1, "test-service", "test", configView{Created_by: "tester"}, 2).Return(nil)
+	mock.EXPECT().updateNamespaceActiveVersion(1, "test-service", "test", 2).Return(nil)
 
-	version, err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test-organization", "test-service", "test", configView{Created_by: "tester"})
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -130,12 +130,12 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenQueryError(t *testing.T) {
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(1, nil)
-	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(errors.New("create query error"))
-	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(1, nil)
+	mock.EXPECT().createNewVersion(1, "test-service", "test", configView{Created_by: "tester"}, 2).Return(errors.New("create query error"))
+	mock.EXPECT().updateNamespaceActiveVersion(1, "test-service", "test", 2).Return(nil)
 
-	version, err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test-organization", "test-service", "test", configView{Created_by: "tester"})
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -146,12 +146,12 @@ func TestCreateNewVersionProcessShouldReturnErrorWhenUpdateActiveVersionError(t 
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(1, nil)
-	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
-	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(errors.New("update version error"))
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(1, nil)
+	mock.EXPECT().createNewVersion(1, "test-service", "test", configView{Created_by: "tester"}, 2).Return(nil)
+	mock.EXPECT().updateNamespaceActiveVersion(1, "test-service", "test", 2).Return(errors.New("update version error"))
 
-	version, err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test-organization", "test-service", "test", configView{Created_by: "tester"})
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -162,12 +162,12 @@ func TestCreateNewVersionProcessShouldNotReturnError(t *testing.T) {
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getLatestVersionForNamespace(1, "test").Return(1, nil)
-	mock.EXPECT().createNewVersion(1, "test", configView{}, 2).Return(nil)
-	mock.EXPECT().updateNamespaceActiveVersion(1, "test", 2).Return(nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getLatestVersionForNamespace(1, "test-service", "test").Return(1, nil)
+	mock.EXPECT().createNewVersion(1, "test-service", "test", configView{Created_by: "tester"}, 2).Return(nil)
+	mock.EXPECT().updateNamespaceActiveVersion(1, "test-service", "test", 2).Return(nil)
 
-	version, err := proc.createNewVersionProcess("test", "test", configView{})
+	version, err := proc.createNewVersionProcess("test-organization", "test-service", "test", configView{Created_by: "tester"})
 	assert.NoError(t, err)
 	assert.NotEmpty(t, version)
 }
@@ -178,10 +178,10 @@ func TestGetConfigurationVersionsProcessShouldReturnErrorWhenServiceIdDoesntExis
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, errors.New("serviceid cant be found"))
-	mock.EXPECT().getVersions(1, "test").Return([]int{1}, nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, errors.New("organization cant be found"))
+	mock.EXPECT().getVersions(1, "test-service", "test").Return([]int{1}, nil)
 
-	version, err := proc.getConfigurationVersionsProcess("test", "test")
+	version, err := proc.getConfigurationVersionsProcess("test-organization", "test-service", "test")
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -192,10 +192,10 @@ func TestGetConfigurationVersionsProcessShouldReturnErrorWhenGetVersionError(t *
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getVersions(1, "test").Return(nil, errors.New("versions cant be found"))
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getVersions(1, "test-service", "test").Return(nil, errors.New("versions cant be found"))
 
-	version, err := proc.getConfigurationVersionsProcess("test", "test")
+	version, err := proc.getConfigurationVersionsProcess("test-organization", "test-service", "test")
 	assert.Error(t, err)
 	assert.Empty(t, version)
 }
@@ -206,10 +206,10 @@ func TestGetConfigurationVersionsProcessShouldNotReturnError(t *testing.T) {
 
 	proc := mainProcessor{repo: mock}
 
-	mock.EXPECT().getServiceId("test").Return(1, nil)
-	mock.EXPECT().getVersions(1, "test").Return([]int{1}, nil)
+	mock.EXPECT().getOrganizationId("test-organization").Return(1, nil)
+	mock.EXPECT().getVersions(1, "test-service", "test").Return([]int{1}, nil)
 
-	version, err := proc.getConfigurationVersionsProcess("test", "test")
+	version, err := proc.getConfigurationVersionsProcess("test-organization", "test-service", "test")
 	assert.NoError(t, err)
 	assert.NotNil(t, version)
 }

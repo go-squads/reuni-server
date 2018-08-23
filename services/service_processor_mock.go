@@ -45,41 +45,41 @@ func (mr *MockserviceProcessorInterfaceMockRecorder) createServiceProcessor(serv
 }
 
 // deleteServiceProcessor mocks base method
-func (m *MockserviceProcessorInterface) deleteServiceProcessor(servicedata servicev) error {
-	ret := m.ctrl.Call(m, "deleteServiceProcessor", servicedata)
+func (m *MockserviceProcessorInterface) deleteServiceProcessor(organizationId int, servicedata servicev) error {
+	ret := m.ctrl.Call(m, "deleteServiceProcessor", organizationId, servicedata)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // deleteServiceProcessor indicates an expected call of deleteServiceProcessor
-func (mr *MockserviceProcessorInterfaceMockRecorder) deleteServiceProcessor(servicedata interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteServiceProcessor", reflect.TypeOf((*MockserviceProcessorInterface)(nil).deleteServiceProcessor), servicedata)
+func (mr *MockserviceProcessorInterfaceMockRecorder) deleteServiceProcessor(organizationId, servicedata interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteServiceProcessor", reflect.TypeOf((*MockserviceProcessorInterface)(nil).deleteServiceProcessor), organizationId, servicedata)
 }
 
 // ValidateTokenProcessor mocks base method
-func (m *MockserviceProcessorInterface) ValidateTokenProcessor(serviceName, inputToken string) (bool, error) {
-	ret := m.ctrl.Call(m, "ValidateTokenProcessor", serviceName, inputToken)
+func (m *MockserviceProcessorInterface) ValidateTokenProcessor(organizationId int, serviceName, inputToken string) (bool, error) {
+	ret := m.ctrl.Call(m, "ValidateTokenProcessor", organizationId, serviceName, inputToken)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateTokenProcessor indicates an expected call of ValidateTokenProcessor
-func (mr *MockserviceProcessorInterfaceMockRecorder) ValidateTokenProcessor(serviceName, inputToken interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTokenProcessor", reflect.TypeOf((*MockserviceProcessorInterface)(nil).ValidateTokenProcessor), serviceName, inputToken)
+func (mr *MockserviceProcessorInterfaceMockRecorder) ValidateTokenProcessor(organizationId, serviceName, inputToken interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTokenProcessor", reflect.TypeOf((*MockserviceProcessorInterface)(nil).ValidateTokenProcessor), organizationId, serviceName, inputToken)
 }
 
 // FindOneServiceByName mocks base method
-func (m *MockserviceProcessorInterface) FindOneServiceByName(name string) (*service, error) {
-	ret := m.ctrl.Call(m, "FindOneServiceByName", name)
+func (m *MockserviceProcessorInterface) FindOneServiceByName(organizationId int, name string) (*service, error) {
+	ret := m.ctrl.Call(m, "FindOneServiceByName", organizationId, name)
 	ret0, _ := ret[0].(*service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindOneServiceByName indicates an expected call of FindOneServiceByName
-func (mr *MockserviceProcessorInterfaceMockRecorder) FindOneServiceByName(name interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneServiceByName", reflect.TypeOf((*MockserviceProcessorInterface)(nil).FindOneServiceByName), name)
+func (mr *MockserviceProcessorInterfaceMockRecorder) FindOneServiceByName(organizationId, name interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneServiceByName", reflect.TypeOf((*MockserviceProcessorInterface)(nil).FindOneServiceByName), organizationId, name)
 }
 
 // TranslateNameToIdProcessor mocks base method

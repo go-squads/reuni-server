@@ -13,7 +13,7 @@ import (
 func CreateRouter() *mux.Router {
 	configuration := configuration.New(appcontext.GetHelper())
 	router := mux.NewRouter()
-	router.HandleFunc("/{organization_name}/services", withAuthenticator(services.GetAllServicesHandler)).Methods("GET")
+	router.HandleFunc("/{organization_name}/services", withAuthenticator(withAuthorizator(services.GetAllServicesHandler, 'r'))).Methods("GET")
 	router.HandleFunc("/{organization_name}/services", withAuthenticator(organizationAuthorizator(services.CreateServiceHandler, 'w'))).Methods("POST")
 	router.HandleFunc("/{organization_name}/services", withAuthenticator(organizationAuthorizator(services.DeleteServiceHandler, 'w'))).Methods("DELETE")
 	router.HandleFunc("/{organization_name}/{service_name}/namespaces", withAuthenticator(withAuthorizator(namespace.RetrieveAllNamespaceHandler, 'r'))).Methods("GET")
@@ -31,7 +31,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organizationAuthorizator(organization.AddUserHandler, 'w'))).Methods("POST")
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organizationAuthorizator(organization.DeleteUserFromGroupHandler, 'w'))).Methods("DELETE")
 	router.HandleFunc("/{organization_name}/member", withAuthenticator(organizationAuthorizator(organization.UpdateRoleOfUserHandler, 'w'))).Methods("PATCH")
-	router.HandleFunc("/{organization_name}/member", withAuthenticator(organization.GetAllMemberOfOrganizationHandler)).Methods("GET")
+	router.HandleFunc("/{organization_name}/member", withAuthenticator(withAuthorizator(organization.GetAllMemberOfOrganizationHandler, 'r'))).Methods("GET")
 	router.HandleFunc("/users", withAuthenticator(users.GetAllUserHandler)).Methods("GET")
 	router.HandleFunc("/signup", users.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/login", users.LoginUserHandler).Methods("POST")

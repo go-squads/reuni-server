@@ -31,7 +31,7 @@ func TestGetAllHandlerShouldReturnOK(t *testing.T) {
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
 	services := []service{}
-	services = append(services, service{Id: 1, Name: "test"})
+	services = append(services, service{Name: "test"})
 
 	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
 	mock.EXPECT().getAllServicesBasedOnOrganizationProcessor(1).Return(services, nil)
@@ -178,13 +178,34 @@ func TestDeleteServiceHandlerShouldNotReturnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
-	mock.EXPECT().deleteServiceProcessor(servicev{Name: "test"}).Return(nil)
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().deleteServiceProcessor(1, servicev{Name: "test"}).Return(nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/test/services", strings.NewReader(payload))
 	r := mux.NewRouter()
 	r.HandleFunc("/{organization_name}/services", DeleteServiceHandler).Methods("DELETE")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestDeleteServiceHandlerShouldReturnErrorWhenTranslateNameReturnError(t *testing.T) {
+	payload := `
+		{
+			"name": "test"
+		}
+	`
+
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(0, helper.NewHttpError(http.StatusBadRequest, "bad request"))
+	mock.EXPECT().deleteServiceProcessor(1, servicev{Name: "test"}).Return(nil)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/test/services", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/services", DeleteServiceHandler).Methods("DELETE")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
 func TestDeleteServiceHandlerShouldNotReturnErrorWhenServiceNotExist(t *testing.T) {
@@ -197,7 +218,8 @@ func TestDeleteServiceHandlerShouldNotReturnErrorWhenServiceNotExist(t *testing.
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
-	mock.EXPECT().deleteServiceProcessor(servicev{Name: "test"}).Return(nil)
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().deleteServiceProcessor(1, servicev{Name: "test"}).Return(nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/test/services", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -216,7 +238,8 @@ func TestDeleteServiceHandlerShouldReturnErrorWhenPayloadNotUnmarshalable(t *tes
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
-	mock.EXPECT().deleteServiceProcessor(servicev{Name: "test"}).Return(nil)
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().deleteServiceProcessor(1, servicev{Name: "test"}).Return(nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/test/services", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -237,7 +260,8 @@ func TestDeleteServiceHandlerShouldReturnErrorWhenProcessorError(t *testing.T) {
 	service_expected := servicev{
 		Name: "test",
 	}
-	mock.EXPECT().deleteServiceProcessor(service_expected).Return(helper.NewHttpError(http.StatusInternalServerError, "Test Error"))
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().deleteServiceProcessor(1, service_expected).Return(helper.NewHttpError(http.StatusInternalServerError, "Test Error"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/test/services", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -256,7 +280,8 @@ func TestValidateTokenShouldReturnValidTrue(t *testing.T) {
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
 
-	mock.EXPECT().ValidateTokenProcessor("test", "HelloWorld!").Return(true, nil)
+	mock.EXPECT().TranslateNameToIdProcessor("test").Return(1, nil)
+	mock.EXPECT().ValidateTokenProcessor(1, "test", "HelloWorld!").Return(true, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/test/test/validatetoken", strings.NewReader(payload))
 	req.Header.Set("Authorization", "HelloWorld!")
@@ -275,7 +300,8 @@ func TestValidateTokenShouldReturnValidFalse(t *testing.T) {
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
 
-	mock.EXPECT().ValidateTokenProcessor("test", "HelloWorld!").Return(false, nil)
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(1, nil)
+	mock.EXPECT().ValidateTokenProcessor(1, "test", "HelloWorld!").Return(false, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/validatetoken", strings.NewReader(""))
 	req.Header.Set("Authorization", "HelloWorld!")
@@ -289,12 +315,29 @@ func TestValidateTokenShouldReturnValidFalse(t *testing.T) {
 	assert.False(t, data["valid"])
 }
 
+func TestValidateTokenShouldReturnErrorWhenTranslateNameReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(0, helper.NewHttpError(http.StatusBadRequest, "bad request"))
+	mock.EXPECT().ValidateTokenProcessor(1, "test", "").Return(false, helper.NewHttpError(500, "TestError"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/org/test/validatetoken", strings.NewReader(""))
+
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/{service_name}/validatetoken", ValidateToken).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
 func TestValidateTokenShouldReturnErrorWhenProcessorError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockserviceProcessorInterface(ctrl)
 	proc = mock
 
-	mock.EXPECT().ValidateTokenProcessor("test", "").Return(false, helper.NewHttpError(500, "TestError"))
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(1, nil)
+	mock.EXPECT().ValidateTokenProcessor(1, "test", "").Return(false, helper.NewHttpError(500, "TestError"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/validatetoken", strings.NewReader(""))
 
@@ -304,22 +347,38 @@ func TestValidateTokenShouldReturnErrorWhenProcessorError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestGetTokenHandlerShouldReturnError(t *testing.T) {
+func TestGetTokenHandlerShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(1, nil)
+
 	q := &helper.QueryMockHelper{
 		Data: []map[string]interface{}{map[string]interface{}{"authorization_token": "testToken"}},
 		Err:  nil,
 	}
 	appcontext.InitMockContext(q)
+
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test-services/token", nil)
-	ServeRequest(rr, req, GetToken)
+	// ServeRequest(rr, req, GetToken)
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/{service_name}/token", GetToken).Methods("GET")
+	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var data map[string]string
 	json.NewDecoder(rr.Body).Decode(&data)
 	assert.Equal(t, "testToken", data["authorization_token"])
 }
 
-func TestGetTokenHandlerShouldNotReturnError(t *testing.T) {
+func TestGetTokenHandlerShouldReturnErrorWhenGetTokenReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(1, nil)
+
 	q := &helper.QueryMockHelper{
 		Data: []map[string]interface{}{map[string]interface{}{"authorization_token": "testToken"}},
 		Err:  helper.NewHttpError(500, "Bad Error"),
@@ -327,8 +386,33 @@ func TestGetTokenHandlerShouldNotReturnError(t *testing.T) {
 	appcontext.InitMockContext(q)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test-services/token", nil)
-	ServeRequest(rr, req, GetToken)
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/{service_name}/token", GetToken).Methods("GET")
+	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	var data map[string]string
+	json.NewDecoder(rr.Body).Decode(&data)
+	assert.Equal(t, "", data["authorization_token"])
+}
+
+func TestGetTokenHandlerShouldReturnErrorWhenTranslateNameReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockserviceProcessorInterface(ctrl)
+	proc = mock
+
+	mock.EXPECT().TranslateNameToIdProcessor("org").Return(0, helper.NewHttpError(http.StatusBadRequest, "bad request"))
+
+	q := &helper.QueryMockHelper{
+		Data: []map[string]interface{}{map[string]interface{}{"authorization_token": "testToken"}},
+		Err:  helper.NewHttpError(500, "Bad Error"),
+	}
+	appcontext.InitMockContext(q)
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/org/test-services/token", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/{service_name}/token", GetToken).Methods("GET")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	var data map[string]string
 	json.NewDecoder(rr.Body).Decode(&data)
 	assert.Equal(t, "", data["authorization_token"])

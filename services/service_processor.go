@@ -6,9 +6,9 @@ import (
 
 type serviceProcessorInterface interface {
 	createServiceProcessor(servicedata servicev, organizationId int) error
-	deleteServiceProcessor(servicedata servicev) error
-	ValidateTokenProcessor(serviceName string, inputToken string) (bool, error)
-	FindOneServiceByName(name string) (*service, error)
+	deleteServiceProcessor(organizationId int, servicedata servicev) error
+	ValidateTokenProcessor(organizationId int, serviceName string, inputToken string) (bool, error)
+	FindOneServiceByName(organizationId int, name string) (*service, error)
 	TranslateNameToIdProcessor(name string) (int, error)
 	getAllServicesBasedOnOrganizationProcessor(organizationId int) ([]service, error)
 }
@@ -25,7 +25,7 @@ func (p *serviceProcessor) createServiceProcessor(servicedata servicev, organiza
 	if serviceStore.Name == "" {
 		return helper.NewHttpError(400, "Service name not defined")
 	}
-	_, err := p.repo.findOneServiceByName(serviceStore.Name)
+	_, err := p.repo.findOneServiceByName(organizationId, serviceStore.Name)
 	if err == nil {
 		return helper.NewHttpError(409, "Service already exist")
 	}
@@ -33,17 +33,18 @@ func (p *serviceProcessor) createServiceProcessor(servicedata servicev, organiza
 	return p.repo.createService(serviceStore)
 }
 
-func (p *serviceProcessor) deleteServiceProcessor(servicedata servicev) error {
+func (p *serviceProcessor) deleteServiceProcessor(organizationId int, servicedata servicev) error {
 	serviceStore := service{}
 	serviceStore.Name = servicedata.Name
+	serviceStore.OrganizationId = organizationId
 	if serviceStore.Name == "" {
 		return helper.NewHttpError(400, "Service name not defined")
 	}
 	return p.repo.deleteService(serviceStore)
 }
 
-func (p *serviceProcessor) ValidateTokenProcessor(serviceName string, inputToken string) (bool, error) {
-	token, err := p.repo.getServiceToken(serviceName)
+func (p *serviceProcessor) ValidateTokenProcessor(organizationId int, serviceName string, inputToken string) (bool, error) {
+	token, err := p.repo.getServiceToken(organizationId, serviceName)
 	if err != nil {
 		return false, err
 	}
@@ -54,8 +55,8 @@ func (p *serviceProcessor) ValidateTokenProcessor(serviceName string, inputToken
 	}
 }
 
-func ValidateTokenProcessor(q helper.QueryExecuter, serviceName string, inputToken string) (bool, error) {
-	token, err := initRepository(q).getServiceToken(serviceName)
+func ValidateTokenProcessor(q helper.QueryExecuter, organizationId int, serviceName string, inputToken string) (bool, error) {
+	token, err := initRepository(q).getServiceToken(organizationId, serviceName)
 	if err != nil {
 		return false, err
 	}
@@ -66,16 +67,16 @@ func ValidateTokenProcessor(q helper.QueryExecuter, serviceName string, inputTok
 	}
 }
 
-func (p *serviceProcessor) FindOneServiceByName(name string) (*service, error) {
-	return p.repo.findOneServiceByName(name)
+func (p *serviceProcessor) FindOneServiceByName(organizationId int, name string) (*service, error) {
+	return p.repo.findOneServiceByName(organizationId, name)
 }
 
 func (p *serviceProcessor) TranslateNameToIdProcessor(name string) (int, error) {
 	return p.repo.translateNameToIdRepository(name)
 }
 
-func FindOneServiceByName(q helper.QueryExecuter, name string) (*service, error) {
-	return initRepository(q).findOneServiceByName(name)
+func FindOneServiceByName(q helper.QueryExecuter, organizationId int, name string) (*service, error) {
+	return initRepository(q).findOneServiceByName(organizationId, name)
 }
 
 func TranslateNameToIdProcessor(q helper.QueryExecuter, name string) (int, error) {

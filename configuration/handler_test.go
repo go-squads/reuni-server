@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func ServeRequest(rr *httptest.ResponseRecorder, req *http.Request, handler http.HandlerFunc) {
+	handler.ServeHTTP(rr, req)
+}
+
 func TestGetConfigurationHandlerShouldReturnErrorWhenVersionCantBeParsed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := NewMockProcessor(ctrl)
@@ -21,7 +26,7 @@ func TestGetConfigurationHandlerShouldReturnErrorWhenVersionCantBeParsed(t *test
 			"user_id": 1
 		}
 	`
-	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(nil, nil)
+	mock.EXPECT().getConfigurationProcess("org", "test", "test", 1).Return(nil, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/error", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -39,7 +44,7 @@ func TestGetConfigurationHandlerShouldReturnErrorWhenGetVersionReturnError(t *te
 			"user_id": 1
 		}
 	`
-	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(nil, errors.New("error"))
+	mock.EXPECT().getConfigurationProcess("org", "test", "test", 1).Return(nil, errors.New("error"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -57,7 +62,7 @@ func TestGetConfigurationHandlerShouldNotReturnError(t *testing.T) {
 			"user_id": 1
 		}
 	`
-	mock.EXPECT().getConfigurationProcess("test", "test", 1).Return(&configView{Version: 1}, nil)
+	mock.EXPECT().getConfigurationProcess("org", "test", "test", 1).Return(&configView{Version: 1}, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -75,7 +80,7 @@ func TestGetLatestVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 			"user_id": 1
 		}
 	`
-	mock.EXPECT().getLatestVersionProcess("test", "test").Return(1, errors.New("error"))
+	mock.EXPECT().getLatestVersionProcess("org", "test", "test").Return(1, errors.New("error"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -93,7 +98,7 @@ func TestGetLatestVersionHandlerShouldNotReturnError(t *testing.T) {
 			"user_id": 1
 		}
 	`
-	mock.EXPECT().getLatestVersionProcess("test", "test").Return(1, nil)
+	mock.EXPECT().getLatestVersionProcess("org", "test", "test").Return(1, nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/1", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -111,11 +116,29 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenUrlNotValid(t *testing.T) {
 			"makeiterror"
 		}
 	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(1, nil)
+	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester"}).Return(1, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
+	r.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestCreateNewVersionHandlerShouldReturnErrorWhenConfigEmpty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockProcessor(ctrl)
+	handler := mainConfiguration{processor: mock}
+	payload := `
+		{
+			"user_id":1
+		}
+	`
+	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester"}).Return(0, errors.New("error create query"))
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
+	r := mux.NewRouter()
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
@@ -126,15 +149,20 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	handler := mainConfiguration{processor: mock}
 	payload := `
 		{
-			"user_id":1
+			"user_id":1,
+			"configuration": {
+				"host": "localhost"
+				}
 		}
 	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(0, errors.New("error create query"))
+	configuration_expected := make(map[string]string)
+	configuration_expected["host"] = "localhost"
+	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester", Configuration: configuration_expected}).Return(0, errors.New("error create query"))
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
-	r.ServeHTTP(rr, req)
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
+	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "username", "tester")))
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
@@ -143,16 +171,21 @@ func TestCreateNewVersionHandlerShouldNotReturnError(t *testing.T) {
 	mock := NewMockProcessor(ctrl)
 	handler := mainConfiguration{processor: mock}
 	payload := `
-		{
-			"user_id":1
-		}
-	`
-	mock.EXPECT().createNewVersionProcess("test", "test", configView{}).Return(1, nil)
+	{
+		"configuration": {
+			"host": "localhost"
+			}
+	}
+		`
+
+	configuration_expected := make(map[string]string)
+	configuration_expected["host"] = "localhost"
+	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester", Configuration: configuration_expected}).Return(1, nil)
 	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/org/test/test/latest", strings.NewReader(payload))
+	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
 	r := mux.NewRouter()
-	r.HandleFunc("/{organization_name}/{service_name}/{namespace}/latest", handler.CreateNewVersionHandler).Methods("GET")
-	r.ServeHTTP(rr, req)
+	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
+	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "username", "tester")))
 	assert.Equal(t, http.StatusCreated, rr.Code)
 }
 
@@ -165,7 +198,7 @@ func TestGetConfigurationVersionsHandlerShouldReturnErrorWhenQueryError(t *testi
 			"user_id":1
 		}
 	`
-	mock.EXPECT().getConfigurationVersionsProcess("test", "test").Return("1", errors.New("error"))
+	mock.EXPECT().getConfigurationVersionsProcess("org", "test", "test").Return("1", errors.New("error"))
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/versions", strings.NewReader(payload))
 	r := mux.NewRouter()
@@ -183,7 +216,7 @@ func TestGetConfigurationVersionsHandlerShouldNotReturnError(t *testing.T) {
 			"user_id":1
 		}
 	`
-	mock.EXPECT().getConfigurationVersionsProcess("test", "test").Return("1", nil)
+	mock.EXPECT().getConfigurationVersionsProcess("org", "test", "test").Return("1", nil)
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/org/test/test/versions", strings.NewReader(payload))
 	r := mux.NewRouter()

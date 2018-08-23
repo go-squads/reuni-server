@@ -3,18 +3,19 @@ package configuration
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/helper"
 )
 
 type Repository interface {
-	getConfiguration(serviceId int, namespace string, version int) (*configView, error)
-	getLatestVersionForNamespace(serviceId int, namespace string) (int, error)
-	createNewVersion(serviceId int, namespace string, config configView, version int) error
-	updateNamespaceActiveVersion(qserviceId int, namespace string, version int) error
-	getVersions(serviceId int, namespace string) ([]int, error)
-	getServiceId(serviceName string) (int, error)
+	getConfiguration(organizationId int, serviceName, namespace string, version int) (*configView, error)
+	getLatestVersionForNamespace(organizationId int, serviceName, namespace string) (int, error)
+	createNewVersion(organizationId int, serviceName, namespace string, config configView, version int) error
+	updateNamespaceActiveVersion(organizationId int, serviceName, namespace string, version int) error
+	getVersions(organizationId int, serviceName, namespace string) ([]int, error)
+	getOrganizationId(organizationName string) (int, error)
 }
 
 type mainRepository struct {
@@ -22,17 +23,17 @@ type mainRepository struct {
 }
 
 const (
-	getConfigurationQuery             = "SELECT version,config_store as configs FROM configurations WHERE service_id=$1 AND namespace=$2 AND version=$3"
-	getLatestVersionForNamespaceQuery = "SELECT MAX(version) as latest FROM configurations WHERE service_id=$1 AND namespace=$2"
-	createNewVersionQuery             = "INSERT INTO configurations(service_id, namespace, version, config_store) VALUES($1,$2,$3,$4)"
-	updateNamespaceActiveVersionQuery = "UPDATE namespaces SET active_version=$1 WHERE service_id=$2 AND namespace=$3"
-	getVersionsQuery                  = "SELECT version FROM configurations WHERE service_id=$1 AND namespace=$2"
-	findServiceIdFromName             = "SELECT id FROM services WHERE name=$1"
+	getConfigurationQuery             = "SELECT version,config_store as configs, created_by FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3 AND version=$4"
+	getLatestVersionForNamespaceQuery = "SELECT MAX(version) as latest FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3"
+	createNewVersionQuery             = "INSERT INTO configurations(organization_id, service_name, namespace, version, config_store, created_by) VALUES($1,$2,$3,$4,$5,$6)"
+	updateNamespaceActiveVersionQuery = "UPDATE namespaces SET active_version=$1 WHERE organization_id=$2 AND service_name=$3 AND namespace=$4"
+	getVersionsQuery                  = "SELECT version FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3"
+	translateNameToIdQuery            = "SELECT id FROM organization WHERE name=$1"
 )
 
-func (s *mainRepository) getConfiguration(serviceId int, namespace string, version int) (*configView, error) {
+func (s *mainRepository) getConfiguration(organizationId int, serviceName, namespace string, version int) (*configView, error) {
 	var config configView
-	data, err := s.execer.DoQueryRow(getConfigurationQuery, serviceId, namespace, version)
+	data, err := s.execer.DoQueryRow(getConfigurationQuery, organizationId, serviceName, namespace, version)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +52,9 @@ func (s *mainRepository) getConfiguration(serviceId int, namespace string, versi
 	return &config, nil
 }
 
-func (s *mainRepository) getLatestVersionForNamespace(serviceId int, namespace string) (int, error) {
+func (s *mainRepository) getLatestVersionForNamespace(organizationId int, serviceName, namespace string) (int, error) {
 	var latestVersion int
-	data, err := s.execer.DoQueryRow(getLatestVersionForNamespaceQuery, serviceId, namespace)
+	data, err := s.execer.DoQueryRow(getLatestVersionForNamespaceQuery, organizationId, serviceName, namespace)
 	if err != nil {
 		return 0, err
 	}
@@ -61,29 +62,30 @@ func (s *mainRepository) getLatestVersionForNamespace(serviceId int, namespace s
 	return latestVersion, nil
 }
 
-func (s *mainRepository) createNewVersion(serviceId int, namespace string, config configView, version int) error {
+func (s *mainRepository) createNewVersion(organizationId int, serviceName, namespace string, config configView, version int) error {
 	configJSON, err := json.Marshal(config.Configuration)
 	if err != nil {
 		return err
 	}
-	_, err = s.execer.DoQuery(createNewVersionQuery, serviceId, namespace, version, configJSON)
+	log.Println("created BYYYYYY: " + config.Created_by)
+	_, err = s.execer.DoQuery(createNewVersionQuery, organizationId, serviceName, namespace, version, configJSON, config.Created_by)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *mainRepository) updateNamespaceActiveVersion(serviceId int, namespace string, version int) error {
+func (s *mainRepository) updateNamespaceActiveVersion(organizationId int, serviceName, namespace string, version int) error {
 
-	_, err := s.execer.DoQuery(updateNamespaceActiveVersionQuery, version, serviceId, namespace)
+	_, err := s.execer.DoQuery(updateNamespaceActiveVersionQuery, version, organizationId, serviceName, namespace)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *mainRepository) getVersions(serviceId int, namespace string) ([]int, error) {
-	data, err := s.execer.DoQuerySlice(getVersionsQuery, serviceId, namespace)
+func (s *mainRepository) getVersions(organizationId int, serviceName, namespace string) ([]int, error) {
+	data, err := s.execer.DoQuerySlice(getVersionsQuery, organizationId, serviceName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +97,8 @@ func (s *mainRepository) getVersions(serviceId int, namespace string) ([]int, er
 	return versions, nil
 }
 
-func (s *mainRepository) getServiceId(serviceName string) (int, error) {
-	ret, err := s.execer.DoQueryRow(findServiceIdFromName, serviceName)
+func (s *mainRepository) getOrganizationId(organizationName string) (int, error) {
+	ret, err := s.execer.DoQueryRow(translateNameToIdQuery, organizationName)
 	if err != nil {
 		return 0, err
 	}

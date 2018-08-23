@@ -34,14 +34,15 @@ func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var namespaceData namespaceView
 	namespaceData.CreatedBy = getFromContext(r, "username")
 	var serviceName = mux.Vars(r)["service_name"]
+	var organizationName = mux.Vars(r)["organization_name"]
 	err := json.NewDecoder(r.Body).Decode(&namespaceData)
 	if err != nil {
 		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
-	err = getProcessor().createNewNamespaceProcessor(serviceName, &namespaceData)
+	err = getProcessor().createNewNamespaceProcessor(organizationName, serviceName, &namespaceData)
 	if err != nil {
-		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, err)
 		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "201 Created")
@@ -49,7 +50,9 @@ func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 
 func RetrieveAllNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var serviceName = mux.Vars(r)["service_name"]
-	configsjson, err := getProcessor().retrieveAllNamespaceProcessor(serviceName)
+	var organizationName = mux.Vars(r)["organization_name"]
+
+	configsjson, err := getProcessor().retrieveAllNamespaceProcessor(organizationName, serviceName)
 	if err != nil {
 		response.ResponseError("RetrieveAllNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusInternalServerError, err.Error()))
 		return

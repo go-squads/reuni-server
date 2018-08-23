@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-squads/reuni-server/appcontext"
@@ -75,8 +76,14 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
+	if err != nil {
+		response.ResponseError("DeleteServiceHandler", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
 	var servicedata servicev
-	err := json.NewDecoder(r.Body).Decode(&servicedata)
+	err = json.NewDecoder(r.Body).Decode(&servicedata)
 	defer r.Body.Close()
 
 	if err != nil {
@@ -84,7 +91,7 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = getProcessor().deleteServiceProcessor(servicedata)
+	err = getProcessor().deleteServiceProcessor(organizationId, servicedata)
 	if err != nil {
 		response.ResponseError("DeleteServiceHandler", getFromContext(r, "username"), w, err)
 		return
@@ -93,9 +100,15 @@ func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
+	if err != nil {
+		response.ResponseError("ValidateToken", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
 	serviceName := mux.Vars(r)["service_name"]
 	token := r.Header.Get("Authorization")
-	result, err := getProcessor().ValidateTokenProcessor(serviceName, token)
+	result, err := getProcessor().ValidateTokenProcessor(organizationId, serviceName, token)
 	if err != nil {
 		response.ResponseError("ValidateToken", getFromContext(r, "username"), w, err)
 		return
@@ -110,11 +123,20 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetToken(w http.ResponseWriter, r *http.Request) {
+	organizationName := mux.Vars(r)["organization_name"]
+	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
+	if err != nil {
+		response.ResponseError("GetToken", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
 	serviceName := mux.Vars(r)["service_name"]
-	token, err := initRepository(appcontext.GetHelper()).getServiceToken(serviceName)
+	log.Println("ORGID: " + fmt.Sprint(organizationId) + " SERVICENAME: " + serviceName)
+	token, err := initRepository(appcontext.GetHelper()).getServiceToken(organizationId, serviceName)
+
 	if err != nil {
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 	}
+	log.Println(token)
 	tokenJSON, _ := json.Marshal(token)
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(tokenJSON))
 }
