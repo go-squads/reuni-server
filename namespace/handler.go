@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/go-squads/reuni-server/appcontext"
 
@@ -38,6 +39,11 @@ func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&namespaceData)
 	if err != nil {
 		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
+		return
+	}
+	reg, _ := regexp.Compile(`^[^.|\s]+$`)
+	if !reg.MatchString(namespaceData.Namespace) {
+		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Organization name should not contain '.' or any whitespaces"))
 		return
 	}
 	err = getProcessor().createNewNamespaceProcessor(organizationName, serviceName, &namespaceData)

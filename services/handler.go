@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/helper"
@@ -60,6 +61,11 @@ func CreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	reg, _ := regexp.Compile(`^[^.|\s]+$`)
+	if !reg.MatchString(servicedata.Name) {
+		response.ResponseError("CreateService", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Service name should not contain '.' or any whitespaces"))
+		return
+	}
 	organizationName := mux.Vars(r)["organization_name"]
 	organizationId, err := getProcessor().TranslateNameToIdProcessor(organizationName)
 	if err != nil {

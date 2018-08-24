@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/go-squads/reuni-server/appcontext"
@@ -41,6 +42,11 @@ func CreateOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if data.Name == "" {
 		response.ResponseError("CreateOrganization", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Name cannot be empty"))
+		return
+	}
+	reg, _ := regexp.Compile(`^[^.|\s]+$`)
+	if !reg.MatchString(data.Name) {
+		response.ResponseError("CreateOrganization", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Organization name should not contain '.' or any whitespaces"))
 		return
 	}
 	uid, err := strconv.ParseInt(getFromContext(r, "userId"), 10, 64)
