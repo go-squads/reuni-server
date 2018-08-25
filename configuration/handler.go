@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
-	"github.com/go-redis/redis"
+	"github.com/go-squads/reuni-server/appcontext"
 	"github.com/go-squads/reuni-server/helper"
 
 	"github.com/go-squads/reuni-server/response"
@@ -124,17 +123,11 @@ func (s *mainConfiguration) CreateNewVersionHandler(w http.ResponseWriter, r *ht
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 		return
 	}
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	pong, err := redisClient.Ping().Result()
-	fmt.Println(pong, err)
-	err = redisClient.Publish(serviceName+"_"+namespace, newVersion).Err()
+	err = appcontext.GetRedisHelper().Publish(organizationName+"_"+serviceName+"_"+namespace, newVersion)
 	if err != nil {
 		log.Println("CreateNewConfigVersion: ", err.Error())
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+		return
 	}
 	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "")
 }

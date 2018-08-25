@@ -166,28 +166,28 @@ func TestCreateNewVersionHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestCreateNewVersionHandlerShouldNotReturnError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mock := NewMockProcessor(ctrl)
-	handler := mainConfiguration{processor: mock}
-	payload := `
-	{
-		"configuration": {
-			"host": "localhost"
-			}
-	}
-		`
+// func TestCreateNewVersionHandlerShouldNotReturnError(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
+// 	mock := NewMockProcessor(ctrl)
+// 	handler := mainConfiguration{processor: mock}
+// 	payload := `
+// 	{
+// 		"configuration": {
+// 			"host": "localhost"
+// 			}
+// 	}
+// 		`
 
-	configuration_expected := make(map[string]string)
-	configuration_expected["host"] = "localhost"
-	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester", Configuration: configuration_expected}).Return(1, nil)
-	var rr = httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
-	r := mux.NewRouter()
-	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
-	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "username", "tester")))
-	assert.Equal(t, http.StatusCreated, rr.Code)
-}
+// 	configuration_expected := make(map[string]string)
+// 	configuration_expected["host"] = "localhost"
+// 	mock.EXPECT().createNewVersionProcess("org", "test", "test", configView{Created_by: "tester", Configuration: configuration_expected}).Return(1, nil)
+// 	var rr = httptest.NewRecorder()
+// 	req, _ := http.NewRequest("POST", "/org/test/test", strings.NewReader(payload))
+// 	r := mux.NewRouter()
+// 	r.HandleFunc("/{organization_name}/{service_name}/{namespace}", handler.CreateNewVersionHandler).Methods("POST")
+// 	r.ServeHTTP(rr, req.WithContext(context.WithValue(req.Context(), "username", "tester")))
+// 	assert.Equal(t, http.StatusCreated, rr.Code)
+// }
 
 func TestGetConfigurationVersionsHandlerShouldReturnErrorWhenQueryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
