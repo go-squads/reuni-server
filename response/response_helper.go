@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-squads/reuni-server/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -34,7 +34,7 @@ func ResponseError(caller, user string, w http.ResponseWriter, err error) {
 		msg, _ := json.Marshal(httpErr)
 		http.Error(w, string(msg), httpErr.Status)
 	} else {
-		if pqErr,ok := err.(*pq.Error); ok {
+		if pqErr, ok := err.(*pq.Error); ok {
 			log.Println(pqErr.Code)
 			log.Println(pqErr.Message)
 		}

@@ -49,11 +49,12 @@ func TestLoginUserProcessorShouldNotReturnError(t *testing.T) {
 	mock := NewMockuserRepositoryInterface(ctrl)
 
 	proc := userProcessor{repo: mock}
-	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return([]byte{}, nil)
+	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return([]byte{}, []byte{}, nil)
 
-	data, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
+	data, dataRefreshToken, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
 	assert.NotNil(t, data)
 	assert.NoError(t, err)
+	assert.NotNil(t, dataRefreshToken)
 }
 
 func TestLoginUserProcessorShouldReturnError(t *testing.T) {
@@ -61,10 +62,11 @@ func TestLoginUserProcessorShouldReturnError(t *testing.T) {
 	mock := NewMockuserRepositoryInterface(ctrl)
 
 	proc := userProcessor{repo: mock}
-	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return(nil, errors.New("error login"))
+	mock.EXPECT().loginUser(userv{Username: "test", Password: "test"}).Return(nil, nil, errors.New("error login"))
 
-	data, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
+	data, dataRefreshToken, err := proc.loginUserProcessor(userv{Username: "test", Password: "test"})
 	assert.Nil(t, data)
+	assert.Nil(t, dataRefreshToken)
 	assert.Error(t, err)
 }
 

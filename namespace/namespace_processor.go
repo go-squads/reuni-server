@@ -46,11 +46,21 @@ func (s *mainProcessor) createNewNamespaceProcessor(organizationName, serviceNam
 	if isNamespaceExist {
 		return helper.NewHttpError(409, "Namespace already exist for the service")
 	}
+
+	configurations := namespacev.Configuration
+	if configurations != nil {
+		if _, ok := configurations[""]; ok && len(configurations) == 1 {
+			return helper.NewHttpError(400, "Configuration cant be empty")
+		}
+	} else {
+		return helper.NewHttpError(400, "Configuration cant be empty")
+	}
+
 	err = s.repo.createNewNamespace(&namespaceStore)
 	if err != nil {
 		return err
 	}
-	configurations := namespacev.Configuration
+
 	err = s.repo.createConfiguration(organizationId, serviceName, namespacev.Namespace, configurations, namespacev.CreatedBy)
 	return err
 }

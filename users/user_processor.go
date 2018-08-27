@@ -11,8 +11,9 @@ type userProcessorInterface interface {
 	getRepository() userRepositoryInterface
 	createUserProcessor(userdata userv) error
 	createUserEncryptPassword(salt string, password string) string
-	loginUserProcessor(loginData userv) ([]byte, error)
+	loginUserProcessor(loginData userv) ([]byte, []byte, error)
 	getAllUserProcessor() (string, error)
+	getUserDataProcessor(username string) ([]byte, error)
 }
 
 type userProcessor struct {
@@ -39,7 +40,7 @@ func (u *userProcessor) createUserEncryptPassword(salt string, password string) 
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-func (u *userProcessor) loginUserProcessor(loginData userv) ([]byte, error) {
+func (u *userProcessor) loginUserProcessor(loginData userv) ([]byte, []byte, error) {
 	return u.repo.loginUser(loginData)
 }
 
@@ -57,4 +58,8 @@ func (u *userProcessor) getAllUserProcessor() (string, error) {
 		return "", err
 	}
 	return string(dataJSON), nil
+}
+
+func (u *userProcessor) getUserDataProcessor(username string) ([]byte, error) {
+	return u.repo.getUserData(username)
 }

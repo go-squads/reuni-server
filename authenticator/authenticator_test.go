@@ -1,7 +1,9 @@
 package authenticator
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/go-squads/reuni-server/helper"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +42,10 @@ func TestParseTokenShouldReturnError(t *testing.T) {
 }
 
 func TestVerifyUserJWTokenVerified(t *testing.T) {
-	json := `{"test":"test"}`
+	expires := fmt.Sprint(time.Now().Add(time.Minute * 100).Unix())
+	json := `{
+		"test":"test",
+		"exp": ` + expires + `}`
 	priv, pub := helper.GenerateRsaKeyPair()
 	token, _ := CreateUserJWToken([]byte(json), priv)
 	obj, err := VerifyUserJWToken(token, pub)

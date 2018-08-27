@@ -7,9 +7,11 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"hash"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/go-squads/reuni-server/helper"
 )
@@ -72,6 +74,10 @@ func VerifyUserJWToken(token string, key *rsa.PublicKey) (map[string]interface{}
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
+	}
+	if payloadMap["exp"].(float64) < float64(time.Now().Unix()) {
+		log.Println(fmt.Sprint(payloadMap["exp"].(float64)) + " " + fmt.Sprint(time.Now().Unix()))
+		return nil, errors.New("your token has been expired")
 	}
 	return payloadMap, nil
 }

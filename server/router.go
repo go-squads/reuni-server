@@ -35,5 +35,6 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/users", withAuthenticator(users.GetAllUserHandler)).Methods("GET")
 	router.HandleFunc("/signup", users.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/login", users.LoginUserHandler).Methods("POST")
+	router.HandleFunc("/generateToken", withAuthenticator(users.GetNewTokenHandler)).Methods("POST")
 	return router
 }

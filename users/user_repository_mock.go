@@ -45,11 +45,12 @@ func (mr *MockuserRepositoryInterfaceMockRecorder) createUser(userstore interfac
 }
 
 // loginUser mocks base method
-func (m *MockuserRepositoryInterface) loginUser(loginData userv) ([]byte, error) {
+func (m *MockuserRepositoryInterface) loginUser(loginData userv) ([]byte, []byte, error) {
 	ret := m.ctrl.Call(m, "loginUser", loginData)
 	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]byte)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // loginUser indicates an expected call of loginUser
@@ -68,4 +69,17 @@ func (m *MockuserRepositoryInterface) getAllUser() ([]user, error) {
 // getAllUser indicates an expected call of getAllUser
 func (mr *MockuserRepositoryInterfaceMockRecorder) getAllUser() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllUser", reflect.TypeOf((*MockuserRepositoryInterface)(nil).getAllUser))
+}
+
+// getUserData mocks base method
+func (m *MockuserRepositoryInterface) getUserData(username string) ([]byte, error) {
+	ret := m.ctrl.Call(m, "getUserData", username)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getUserData indicates an expected call of getUserData
+func (mr *MockuserRepositoryInterfaceMockRecorder) getUserData(username interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getUserData", reflect.TypeOf((*MockuserRepositoryInterface)(nil).getUserData), username)
 }

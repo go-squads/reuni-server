@@ -51,9 +51,10 @@ func TestLoginUserShouldNotReturnError(t *testing.T) {
 		Username: "usertest",
 		Password: "password",
 	}
-	data, err := rep.loginUser(user)
+	data, dataRefreshToken, err := rep.loginUser(user)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
+	assert.NotNil(t, dataRefreshToken)
 }
 
 func TestLoginUserShouldReturnError(t *testing.T) {
@@ -62,9 +63,10 @@ func TestLoginUserShouldReturnError(t *testing.T) {
 		Username: "usertest",
 		Password: "password",
 	}
-	data, err := rep.loginUser(user)
+	data, dataRefreshToken, err := rep.loginUser(user)
 	assert.Error(t, err)
 	assert.Nil(t, data)
+	assert.Nil(t, dataRefreshToken)
 }
 
 func TestLoginUserShouldReturnErrorUnauthorizedWhenNotValid(t *testing.T) {
@@ -73,9 +75,10 @@ func TestLoginUserShouldReturnErrorUnauthorizedWhenNotValid(t *testing.T) {
 		Username: "usertest",
 		Password: "password",
 	}
-	data, err := rep.loginUser(user)
+	data, dataRefreshToken, err := rep.loginUser(user)
 	assert.Error(t, err)
 	assert.Nil(t, data)
+	assert.Nil(t, dataRefreshToken)
 }
 
 func TestGetAllUserRepositoryShouldReturnErrorWhenQueryError(t *testing.T) {

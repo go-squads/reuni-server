@@ -165,7 +165,7 @@ func TestLoginUserHandlerShouldReturnErrorWhenQueryLoginErrorSqlNoRows(t *testin
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("testtest")
-	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, helper.NewHttpError(http.StatusUnauthorized, "Wrong username/password"))
+	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, nil, helper.NewHttpError(http.StatusUnauthorized, "Wrong username/password"))
 
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/login", strings.NewReader(payload))
@@ -186,7 +186,7 @@ func TestLoginUserHandlerShouldReturnErrorWhenQueryLoginErrorDefault(t *testing.
 		}
 	`
 	mock.EXPECT().createUserEncryptPassword("test", "test").Return("testtest")
-	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, errors.New("internal error"))
+	mock.EXPECT().loginUserProcessor(userv{Username: "test", Password: "testtest"}).Return(nil, nil, errors.New("internal error"))
 
 	var rr = httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/login", strings.NewReader(payload))

@@ -70,7 +70,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userData, err := getProcessor().loginUserProcessor(logindata)
+	userData, userDataForRefreshToken, err := getProcessor().loginUserProcessor(logindata)
 	if err != nil {
 		response.ResponseError("CreateUser", getFromContext(r, "username"), w, err)
 		return
@@ -80,7 +80,11 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err.Error())
 	}
-	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\"}", token))
+	refreshToken, err := authenticator.CreateUserJWToken(userDataForRefreshToken, appcontext.GetKeys().PrivateKey)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\",\"refresh_token\": \"%v\"}", token, refreshToken))
 }
 
 func GetAllUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,4 +95,18 @@ func GetAllUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response.ResponseHelper(w, 200, response.ContentJson, usr)
 
+}
+
+func GetNewTokenHandler(w http.ResponseWriter, r *http.Request) {
+	username := getFromContext(r, "username")
+	userData, err := getProcessor().getUserDataProcessor(username)
+	if err != nil {
+		response.ResponseError("GetNewToken", getFromContext(r, "username"), w, err)
+		return
+	}
+	newToken, err := authenticator.CreateUserJWToken(userData, appcontext.GetKeys().PrivateKey)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	response.ResponseHelper(w, http.StatusCreated, response.ContentJson, fmt.Sprintf("{\"token\": \"%v\"}", newToken))
 }
