@@ -105,3 +105,18 @@ func TestGetAllUserRepositoryShouldNotReturnError(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 }
+
+func TestGetUserDataRepositoryShouldReturnErrorWhenQueryError(t *testing.T) {
+	rep := initRepository(makeMockRows(nil, errors.New("error")))
+	res, err := rep.getUserData("test")
+	assert.Error(t, err)
+	assert.Nil(t, res)
+}
+
+func TestGetUserDataRepositoryShouldNotReturnError(t *testing.T) {
+	datum := map[string]interface{}{"id": int64(1), "name": "tester", "username": "test", "email": "test@gmail.com"}
+	rep := initRepository(makeMockRow(datum, nil))
+	res, err := rep.getUserData("test")
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+}

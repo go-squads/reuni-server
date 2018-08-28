@@ -1,6 +1,7 @@
 package users
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -93,5 +94,32 @@ func TestGetAllProcessorShouldNotReturnError(t *testing.T) {
 
 	data, err := proc.getAllUserProcessor()
 	assert.NotEmpty(t, data)
+	assert.NoError(t, err)
+}
+
+func TestGetUserDataProcessorShouldReturnErrorWhenRepositoryError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	mock.EXPECT().getUserData("test").Return(nil, errors.New("error"))
+
+	data, err := proc.getUserDataProcessor("test")
+	assert.Nil(t, data)
+	assert.Error(t, err)
+}
+
+func TestGetUserDataProcessorShouldNotReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserRepositoryInterface(ctrl)
+
+	proc := userProcessor{repo: mock}
+	var users verifiedUser
+	users.ID = 1
+	usersJSON, _ := json.Marshal(users)
+	mock.EXPECT().getUserData("test").Return(usersJSON, nil)
+
+	data, err := proc.getUserDataProcessor("test")
+	assert.NotNil(t, data)
 	assert.NoError(t, err)
 }

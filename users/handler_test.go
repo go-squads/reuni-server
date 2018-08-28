@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
+
+func ServeRequest(rr *httptest.ResponseRecorder, req *http.Request, handler http.HandlerFunc) {
+	handler.ServeHTTP(rr, req)
+}
 
 func TestCreateUserHandlerShouldReturnErrorWhenBodyCantBeParsed(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -222,4 +227,18 @@ func TestGetAllUserHandlerShouldNotReturnError(t *testing.T) {
 	r.HandleFunc("/users", GetAllUserHandler).Methods("GET")
 	r.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetUserDataHandlerShouldReturnErrorWhenProcessorReturnError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mock := NewMockuserProcessorInterface(ctrl)
+	proc = mock
+	mock.EXPECT().getUserDataProcessor("test").Return(nil, errors.New("error"))
+
+	var rr = httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/generateToken", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/generateToken", GetNewTokenHandler).Methods("POST")
+	ServeRequest(rr, req.WithContext(context.WithValue(req.Context(), "username", "test")), GetNewTokenHandler)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }

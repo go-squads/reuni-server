@@ -53,6 +53,18 @@ func TestVerifyUserJWTokenVerified(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestVerifyUserJWTokenShouldReturnErrorWhenExpiryTimeHasPassed(t *testing.T) {
+	expires := fmt.Sprint(0)
+	json := `{
+		"test":"test",
+		"exp": ` + expires + `}`
+	priv, pub := helper.GenerateRsaKeyPair()
+	token, _ := CreateUserJWToken([]byte(json), priv)
+	obj, err := VerifyUserJWToken(token, pub)
+	assert.Nil(t, obj)
+	assert.Error(t, err)
+}
+
 func TestVerifyUserJWTokenShouldReturnErrorWhenTokenChangeByUser(t *testing.T) {
 	json := `{"test":"test"}`
 	priv, pub := helper.GenerateRsaKeyPair()
