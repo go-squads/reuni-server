@@ -33,7 +33,6 @@ func getFromContext(r *http.Request, key string) string {
 
 func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	var namespaceData namespaceView
-	namespaceData.CreatedBy = getFromContext(r, "username")
 	var serviceName = mux.Vars(r)["service_name"]
 	var organizationName = mux.Vars(r)["organization_name"]
 	err := json.NewDecoder(r.Body).Decode(&namespaceData)
@@ -41,6 +40,7 @@ func CreateNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, err.Error()))
 		return
 	}
+	namespaceData.CreatedBy = getFromContext(r, "username")
 	reg, _ := regexp.Compile(`^[^.|\s]+$`)
 	if !reg.MatchString(namespaceData.Namespace) {
 		response.ResponseError("CreateNamespace", getFromContext(r, "username"), w, helper.NewHttpError(http.StatusBadRequest, "Organization name should not contain '.' or any whitespaces"))

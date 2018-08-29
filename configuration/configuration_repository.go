@@ -23,9 +23,9 @@ type mainRepository struct {
 }
 
 const (
-	getConfigurationQuery             = "SELECT version,config_store as configs, created_by FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3 AND version=$4"
+	getConfigurationQuery             = "SELECT version,parent_version,config_store as configs, created_by FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3 AND version=$4"
 	getLatestVersionForNamespaceQuery = "SELECT MAX(version) as latest FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3"
-	createNewVersionQuery             = "INSERT INTO configurations(organization_id, service_name, namespace, version, config_store, created_by) VALUES($1,$2,$3,$4,$5,$6)"
+	createNewVersionQuery             = "INSERT INTO configurations(organization_id, service_name, namespace, version, parent_version, config_store, created_by) VALUES($1,$2,$3,$4,$5,$6,$7)"
 	updateNamespaceActiveVersionQuery = "UPDATE namespaces SET active_version=$1 WHERE organization_id=$2 AND service_name=$3 AND namespace=$4"
 	getVersionsQuery                  = "SELECT version FROM configurations WHERE organization_id=$1 AND service_name=$2 AND namespace=$3"
 	translateNameToIdQuery            = "SELECT id FROM organization WHERE name=$1"
@@ -68,7 +68,7 @@ func (s *mainRepository) createNewVersion(organizationId int, serviceName, names
 		return err
 	}
 	log.Println("created BYYYYYY: " + config.Created_by)
-	_, err = s.execer.DoQuery(createNewVersionQuery, organizationId, serviceName, namespace, version, configJSON, config.Created_by)
+	_, err = s.execer.DoQuery(createNewVersionQuery, organizationId, serviceName, namespace, version, config.Parent_version, configJSON, config.Created_by)
 	if err != nil {
 		return err
 	}

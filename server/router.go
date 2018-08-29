@@ -25,6 +25,7 @@ func CreateRouter() *mux.Router {
 	router.HandleFunc("/{organization_name}/{service_name}/{namespace}/agent", validateAgentTokenMiddleware(configuration.GetLatestVersionHandler)).Methods("GET")
 	router.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}/agent", validateAgentTokenMiddleware(configuration.GetConfigurationHandler))
 	router.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}", withAuthenticator(withAuthorizator(configuration.GetConfigurationHandler, 'r'))).Methods("GET")
+	router.HandleFunc("/{organization_name}/{service_name}/{namespace}/{version}/compare", withAuthenticator(withAuthorizator(configuration.GetDifferenceFromParentVersionHandler, 'r'))).Methods("GET")
 	router.HandleFunc("/{organization_name}/{service_name}/{namespace}", withAuthenticator(withAuthorizator(configuration.CreateNewVersionHandler, 'w'))).Methods("POST")
 	router.HandleFunc("/organization", withAuthenticator(organization.GetAllHandler)).Methods("GET")
 	router.HandleFunc("/organization", withAuthenticator(organization.CreateOrganizationHandler)).Methods("POST")

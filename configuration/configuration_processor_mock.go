@@ -83,3 +83,16 @@ func (m *MockProcessor) getConfigurationVersionsProcess(organizationName, servic
 func (mr *MockProcessorMockRecorder) getConfigurationVersionsProcess(organizationName, serviceName, namespace interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getConfigurationVersionsProcess", reflect.TypeOf((*MockProcessor)(nil).getConfigurationVersionsProcess), organizationName, serviceName, namespace)
 }
+
+// getDifferenceProcessor mocks base method
+func (m *MockProcessor) getDifferenceProcessor(organizationName, serviceName, namespace string, version, previous_version int) ([]byte, error) {
+	ret := m.ctrl.Call(m, "getDifferenceProcessor", organizationName, serviceName, namespace, version, previous_version)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getDifferenceProcessor indicates an expected call of getDifferenceProcessor
+func (mr *MockProcessorMockRecorder) getDifferenceProcessor(organizationName, serviceName, namespace, version, previous_version interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getDifferenceProcessor", reflect.TypeOf((*MockProcessor)(nil).getDifferenceProcessor), organizationName, serviceName, namespace, version, previous_version)
+}

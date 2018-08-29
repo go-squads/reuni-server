@@ -20,6 +20,7 @@ type Configuration interface {
 	GetLatestVersionHandler(w http.ResponseWriter, r *http.Request)
 	CreateNewVersionHandler(w http.ResponseWriter, r *http.Request)
 	GetConfigurationVersionsHandler(w http.ResponseWriter, r *http.Request)
+	GetDifferenceFromParentVersionHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type mainConfiguration struct {
@@ -114,7 +115,6 @@ func (s *mainConfiguration) CreateNewVersionHandler(w http.ResponseWriter, r *ht
 		response.ResponseHelper(w, http.StatusBadRequest, response.ContentText, "Configuration cant be empty")
 		return
 	}
-
 	var newVersion int
 	config.Created_by = getFromContext(r, "username")
 	newVersion, err = s.processor.createNewVersionProcess(organizationName, serviceName, namespace, config)
@@ -129,7 +129,8 @@ func (s *mainConfiguration) CreateNewVersionHandler(w http.ResponseWriter, r *ht
 		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
 		return
 	}
-	response.ResponseHelper(w, http.StatusCreated, response.ContentText, "")
+	fmt.Println("new version created:" + fmt.Sprint(newVersion))
+	response.ResponseHelper(w, http.StatusCreated, response.ContentText, fmt.Sprint(newVersion))
 }
 
 func (s *mainConfiguration) GetConfigurationVersionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,4 +145,27 @@ func (s *mainConfiguration) GetConfigurationVersionsHandler(w http.ResponseWrite
 		return
 	}
 	response.ResponseHelper(w, http.StatusOK, response.ContentJson, resp)
+}
+
+func (s *mainConfiguration) GetDifferenceFromParentVersionHandler(w http.ResponseWriter, r *http.Request) {
+	routerVar := mux.Vars(r)
+	organizationName := routerVar["organization_name"]
+	serviceName := routerVar["service_name"]
+	namespace := routerVar["namespace"]
+	version, err := strconv.Atoi(routerVar["version"])
+	if err != nil {
+		log.Println("GetConfig: Cannot parse version to Integer.")
+		response.RespondWithError(w, http.StatusBadRequest, response.ContentJson, "Cannot Parse Version")
+		return
+	}
+	resp, err := s.processor.getDifferenceProcessor(organizationName, serviceName, namespace, version, version-1)
+	if err != nil {
+		log.Println("GetConfigurationHandler:", err.Error())
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+		return
+	}
+	if resp == nil {
+		response.ResponseHelper(w, http.StatusInternalServerError, response.ContentText, "")
+	}
+	response.ResponseHelper(w, http.StatusOK, response.ContentJson, string(resp))
 }

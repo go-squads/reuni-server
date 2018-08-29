@@ -1,9 +1,10 @@
 package configuration
 
 type configView struct {
-	Version       int               `json:"version"`
-	Configuration map[string]string `json:"configuration"`
-	Created_by    string            `json:"created_by"`
+	Version        int               `json:"version"`
+	Parent_version int               `json:"parent_version"`
+	Configuration  map[string]string `json:"configuration"`
+	Created_by     string            `json:"created_by"`
 }
 
 type versionView struct {

@@ -183,6 +183,7 @@ CREATE TABLE public.configurations (
     service_name text NOT NULL,
     namespace text NOT NULL,
     version integer DEFAULT 1,
+    parent_version integer DEFAULT 0,
     config_store jsonb NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now(),
