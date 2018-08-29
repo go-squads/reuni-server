@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Processor interface {
@@ -102,7 +103,7 @@ func (s *mainProcessor) getDifferenceProcessor(organizationName, serviceName, na
 		if err != nil {
 			return nil, err
 		}
-		differenceCollector["dif-parent"] = differenceWithParentVersion
+		differenceCollector["dif-parent-"+fmt.Sprint(config.Parent_version)] = differenceWithParentVersion
 	}
 	if previous_version != 0 {
 		previousVersionConfig, err := s.repo.getConfiguration(organizationId, serviceName, namespace, previous_version)
@@ -113,7 +114,7 @@ func (s *mainProcessor) getDifferenceProcessor(organizationName, serviceName, na
 		if err != nil {
 			return nil, err
 		}
-		differenceCollector["dif-previous"] = differenceWithPreviousVersion
+		differenceCollector["dif-previous-"+fmt.Sprint(previous_version)] = differenceWithPreviousVersion
 	}
 
 	return json.Marshal(differenceCollector)
